@@ -36,3 +36,7 @@ Choices made where the spec was open, per rule 6 in the build prompt.
 | 30 | 4 | Gold members get free delivery at Gold partners above ₹199 and an extra 10% (max ₹75) off, shown inside "Discount" and tracked in `gold_savings_paise`. | Spec lists both benefits. |
 | 31 | 4 | Scheduled orders become PLACED 45 minutes before the slot via `/api/cron/scheduled-orders` (Vercel Cron, every 5 minutes). | Supabase pg_cron isn't available everywhere; Vercel Cron ships with the app. |
 | 32 | 4 | Playwright runs with one worker. | Tests share seeded demo accounts and one database. |
+| 33 | 5 | Accepting an order records ACCEPTED (with prep time) and moves straight to PREPARING; the kitchen sees a countdown. The restaurant or rider can mark "handed over" (→ PICKED_UP). | Matches the partner flow in the spec (New → Accept → Preparing → Ready → Handed over). |
+| 34 | 5 | The order alert is a WebAudio chime that repeats every 2.5 s while any order is waiting, plus a browser notification. Browsers need one click ("Turn on order alerts") before playing sound. | No audio file to host; satisfies autoplay rules. |
+| 35 | 5 | Realtime subscriptions load the session and call `realtime.setAuth` before joining, and fall back to polling (10–15 s) when the channel isn't connected. | Without the token, Realtime joins as anonymous and RLS hides the rows. Polling keeps the board correct if WebSockets are blocked. |
+| 36 | 5 | With no outlet chosen, the partner console opens the outlet with the most recent order. | Multi-outlet owners land where the action is. |

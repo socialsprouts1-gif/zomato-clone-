@@ -27,7 +27,7 @@ export const TRANSITIONS: Record<OrderStatus, Partial<Record<OrderStatus, Actor[
   ACCEPTED: { PREPARING: ["restaurant", "system", "admin"], CANCELLED_BY_CUSTOMER: ["customer"], CANCELLED: ["admin"] },
   PREPARING: { READY: ["restaurant", "system", "admin"], CANCELLED_BY_CUSTOMER: ["customer"], CANCELLED: ["admin"] },
   READY: { RIDER_ASSIGNED: ["system", "rider", "admin"], CANCELLED_BY_CUSTOMER: ["customer"], CANCELLED: ["admin"] },
-  RIDER_ASSIGNED: { PICKED_UP: ["rider", "system", "admin"], CANCELLED_BY_CUSTOMER: ["customer"], CANCELLED: ["admin"] },
+  RIDER_ASSIGNED: { PICKED_UP: ["rider", "restaurant", "system", "admin"], CANCELLED_BY_CUSTOMER: ["customer"], CANCELLED: ["admin"] },
   PICKED_UP: { OUT_FOR_DELIVERY: ["rider", "system", "admin"], CANCELLED: ["admin"] },
   OUT_FOR_DELIVERY: { DELIVERED: ["rider", "system", "admin"], CANCELLED: ["admin"] },
   DELIVERED: {},

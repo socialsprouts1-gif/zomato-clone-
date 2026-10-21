@@ -107,7 +107,7 @@ Ticked only when verified working (tests or manual check).
 
 ## 4. Restaurant partner
 - [ ] Onboarding (pending → approved)
-- [ ] Live orders with sound + notification, accept/reject/ready/handover, KOT
+- [x] Live orders with sound + notification, accept/reject/ready/handover, KOT
 - [ ] Online/offline, busy, holidays
 - [ ] Menu management (categories, items, variants, add-ons, stock, timings)
 - [ ] Inventory with low-stock + auto out-of-stock
@@ -117,9 +117,9 @@ Ticked only when verified working (tests or manual check).
 - [ ] Table bookings + tables with QR
 - [ ] Business reports + CSV
 - [ ] Payouts
-- [ ] Multi-outlet switcher
+- [x] Multi-outlet switcher
 - [ ] Staff management
-- [ ] Auto-accept toggle
+- [x] Auto-accept toggle
 
 ## 5. Rider
 - [ ] Onboarding with documents

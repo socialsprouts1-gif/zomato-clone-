@@ -207,8 +207,10 @@ async function dispatch(change) {
       let record = change.record;
       if (type !== "DELETE") {
         record = await rowVisibleTo(sock.claims, schema, table, change.record?.id);
+        if (process.env.DEBUG_RT) console.log("rt", table, type, "role", sock.claims?.role, "sub", sock.claims?.sub, "visible", Boolean(record));
         if (!record) continue;
       }
+      if (process.env.DEBUG_RT) console.log("rt filters", ids.map((b) => b.filter), "row restaurant", record?.restaurant_id);
       const matched = ids.filter((b) => matchFilter(b.parsed, type === "DELETE" ? change.old_record : record)).map((b) => b.id);
       if (!matched.length) continue;
       send(sock.ws, null, null, topic, "postgres_changes", {

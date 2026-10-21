@@ -53,3 +53,31 @@ export async function latestMail(to: string): Promise<{ subject: string; body: s
   const list = (await res.json()) as { subject: string; body: string }[];
   return list.at(-1);
 }
+
+/** Adds two items from Saffron Courtyard to an empty cart and opens the cart page. */
+export async function fillCart(page: Page, slug = "saffron-courtyard") {
+  await page.goto(`/restaurant/${slug}`);
+  await page.evaluate(() => {
+    localStorage.removeItem("thaali.cart");
+    localStorage.removeItem("thaali.checkout");
+  });
+  await page.reload();
+  await page.getByRole("button", { name: "Add Hara Bhara Kebab" }).click();
+  await page.getByRole("button", { name: "Add one more Hara Bhara Kebab" }).click();
+  await page.getByRole("button", { name: "Add Lucknowi Chicken Biryani" }).click();
+  await page.getByRole("dialog").getByLabel("Burani raita").click();
+  await page.getByRole("dialog").getByRole("button", { name: /add item/i }).click();
+  await page.getByTestId("cart-bar").click();
+  await expect(page).toHaveURL(/\/cart/);
+}
+
+/** Places a cash-on-delivery order as the signed-in customer; returns its order number. */
+export async function placeCodOrder(page: Page, opts: { pay?: "cod" | "upi" } = {}) {
+  await fillCart(page);
+  await page.getByRole("radio", { name: opts.pay === "upi" ? /^UPI/ : /cash on delivery/i }).click();
+  await page.getByTestId("place-order").click();
+  if (opts.pay === "upi") await page.getByTestId("demo-payment").getByRole("button", { name: "Pay now" }).click();
+  await expect(page).toHaveURL(/\/orders\/[0-9a-f-]{36}/, { timeout: 15000 });
+  const id = page.url().split("/orders/")[1]!.split("?")[0]!;
+  return id;
+}

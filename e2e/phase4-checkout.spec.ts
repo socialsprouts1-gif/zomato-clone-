@@ -70,7 +70,8 @@ test("WELCOME50 + ₹30 tip + demo UPI payment creates an order with correct ser
 
 test("cash on delivery with part paid from the wallet", async ({ page }) => {
   await loginAs(page, "customer");
-  await query(`select public.wallet_apply(id, 30000, 'admin_credit', 'Test credit') from profiles where email = 'customer@demo.in'`);
+  // Small balance so the wallet covers only part of the bill.
+  await query(`update wallets set balance_paise = 15000 where user_id = (select id from profiles where email = 'customer@demo.in')`);
   const before = Number((await query<{ b: string }>(`select balance_paise b from wallets w join profiles p on p.id = w.user_id where p.email = 'customer@demo.in'`))[0]!.b);
   await fillCart(page);
   await page.getByRole("switch", { name: "Use Thaali wallet" }).click();
@@ -81,7 +82,8 @@ test("cash on delivery with part paid from the wallet", async ({ page }) => {
   const o = await latestOrder("customer@demo.in");
   expect(o.payment_method).toBe("cod");
   expect(o.payment_status).toBe("cod_pending");
-  expect(Number(o.wallet_used_paise)).toBe(Math.min(before, Number(o.total_paise)));
+  expect(Number(o.wallet_used_paise)).toBe(15000);
+  expect(Number(o.payable_paise)).toBe(Number(o.total_paise) - 15000);
   const after = Number((await query<{ b: string }>(`select balance_paise b from wallets w join profiles p on p.id = w.user_id where p.email = 'customer@demo.in'`))[0]!.b);
   expect(after).toBe(before - Number(o.wallet_used_paise));
 });
