@@ -14,17 +14,17 @@ Ticked only when verified working (tests or manual check).
 - [x] Playwright set up
 
 ## 3.1 Onboarding & account
-- [ ] Splash + location permission / map pick / address search
-- [ ] Phone + OTP login (demo 123456)
-- [ ] Email magic link
-- [ ] Google login
-- [ ] Profile (name, email, phone, avatar, dietary preference)
-- [ ] Saved addresses with map pin, flat/landmark, instructions
+- [x] Splash + location permission / map pick / address search
+- [x] Phone + OTP login (demo 123456)
+- [x] Email magic link
+- [ ] Google login (built; needs Google provider enabled in Supabase to verify)
+- [x] Profile (name, email, phone, avatar, dietary preference)
+- [x] Saved addresses with map pin, flat/landmark, instructions
 - [ ] Settings: notifications, dark mode, language, delete account
 - [ ] Order history with hide/delete
 
 ## 3.2 Home & discovery
-- [ ] Location header
+- [x] Location header
 - [ ] Delivery / Dining Out / Live tabs
 - [ ] Admin-managed banner carousel
 - [ ] What's on your mind? cuisine carousel

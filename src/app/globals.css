@@ -107,3 +107,18 @@
 .pb-safe {
   padding-bottom: max(env(safe-area-inset-bottom), 0.5rem);
 }
+
+/* Map markers */
+.leaflet-container {
+  font-family: var(--font-sans);
+}
+.thaali-marker {
+  background: transparent;
+  border: 0;
+}
+.thaali-rider-marker {
+  transition: transform 1.9s linear;
+}
+.leaflet-zoom-anim .thaali-rider-marker {
+  transition: none;
+}

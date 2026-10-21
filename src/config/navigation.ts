@@ -21,14 +21,16 @@ import {
   type LucideIcon,
 } from "lucide-react";
 
-export type NavItem = { href: string; label: string; icon: LucideIcon };
+import type { MessageKey } from "@/lib/i18n/dictionaries";
+
+export type NavItem = { href: string; label: string; icon: LucideIcon; i18nKey?: MessageKey };
 
 export const customerNav: NavItem[] = [
-  { href: "/", label: "Delivery", icon: Home },
-  { href: "/dining", label: "Dining", icon: UtensilsCrossed },
-  { href: "/search", label: "Search", icon: Search },
-  { href: "/orders", label: "Orders", icon: ShoppingBag },
-  { href: "/account", label: "Account", icon: UserRound },
+  { href: "/", label: "Delivery", icon: Home, i18nKey: "nav.delivery" },
+  { href: "/dining", label: "Dining", icon: UtensilsCrossed, i18nKey: "nav.dining" },
+  { href: "/search", label: "Search", icon: Search, i18nKey: "nav.search" },
+  { href: "/orders", label: "Orders", icon: ShoppingBag, i18nKey: "nav.orders" },
+  { href: "/account", label: "Account", icon: UserRound, i18nKey: "nav.account" },
 ];
 
 export const riderNav: NavItem[] = [

@@ -8,6 +8,7 @@
 import { createHmac } from "node:crypto";
 import fs from "node:fs";
 import http from "node:http";
+import net from "node:net";
 import path from "node:path";
 import pg from "pg";
 import { WebSocketServer } from "ws";
@@ -294,6 +295,58 @@ function handleSocket(ws, req) {
   });
 }
 
+// ---------- mail catcher (SMTP on :2500, read back via GET /mail?to=) ----------
+/** @type {Map<string, {subject: string, body: string, at: number}[]>} */
+const mailbox = new Map();
+function decodeQuotedPrintable(s) {
+  return s.replace(/=\r?\n/g, "").replace(/=([0-9A-F]{2})/gi, (_, h) => String.fromCharCode(parseInt(h, 16)));
+}
+net.createServer((sock) => {
+  let rcpts = [];
+  let inData = false;
+  let buf = "";
+  sock.write("220 thaali-dev ESMTP\r\n");
+  sock.on("data", (chunk) => {
+    buf += chunk.toString("utf8");
+    if (inData) {
+      const end = buf.indexOf("\r\n.\r\n");
+      if (end === -1) return;
+      const msg = buf.slice(0, end);
+      buf = buf.slice(end + 5);
+      inData = false;
+      const [head, ...rest] = msg.split("\r\n\r\n");
+      const subject = /^Subject: (.*)$/im.exec(head)?.[1] ?? "";
+      const body = decodeQuotedPrintable(rest.join("\r\n\r\n"));
+      for (const r of rcpts) {
+        const list = mailbox.get(r) ?? [];
+        list.push({ subject, body, at: Date.now() });
+        mailbox.set(r, list.slice(-10));
+      }
+      rcpts = [];
+      sock.write("250 OK queued\r\n");
+    }
+    let idx;
+    while (!inData && (idx = buf.indexOf("\r\n")) !== -1) {
+      const line = buf.slice(0, idx);
+      buf = buf.slice(idx + 2);
+      const cmd = line.slice(0, 4).toUpperCase();
+      if (cmd === "EHLO") sock.write("250-thaali-dev\r\n250 8BITMIME\r\n");
+      else if (cmd === "HELO") sock.write("250 thaali-dev\r\n");
+      else if (cmd === "RCPT") {
+        const m = /<([^>]+)>/.exec(line);
+        if (m) rcpts.push(m[1].toLowerCase());
+        sock.write("250 OK\r\n");
+      } else if (cmd === "DATA") {
+        inData = true;
+        sock.write("354 End data with <CR><LF>.<CR><LF>\r\n");
+      } else if (cmd === "QUIT") {
+        sock.end("221 Bye\r\n");
+      } else sock.write("250 OK\r\n");
+    }
+  });
+  sock.on("error", () => {});
+}).listen(Number(process.env.SMTP_PORT ?? 2500), "127.0.0.1");
+
 // ---------- server ----------
 const server = http.createServer((req, res) => {
   if (req.method === "OPTIONS") {
@@ -301,8 +354,15 @@ const server = http.createServer((req, res) => {
     return res.end();
   }
   if (req.url.startsWith("/auth/v1")) return proxy(req, res, AUTH_URL, "/auth/v1");
+  // GoTrue builds email links without the /auth/v1 prefix when running standalone.
+  if (req.url.startsWith("/verify") || req.url.startsWith("/callback") || req.url.startsWith("/authorize")) return proxy(req, res, AUTH_URL, "");
   if (req.url.startsWith("/rest/v1")) return proxy(req, res, REST_URL, "/rest/v1");
   if (req.url.startsWith("/storage/v1")) return void storage(req, res);
+  if (req.url.startsWith("/mail")) {
+    const to = (new URL(req.url, "http://x").searchParams.get("to") ?? "").toLowerCase();
+    res.writeHead(200, { "content-type": "application/json", ...CORS });
+    return res.end(JSON.stringify(mailbox.get(to) ?? []));
+  }
   if (req.url === "/health") {
     res.writeHead(200, CORS);
     return res.end("ok");

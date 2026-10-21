@@ -3,16 +3,18 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { isNavActive, navByApp, type NavApp } from "@/config/navigation";
+import { useT } from "@/lib/i18n/client";
 import { cn } from "@/lib/utils";
 
 /** Horizontal nav for tablet/desktop; the bottom tab bar takes over on phones. */
 export function TopNav({ app }: { app: NavApp }) {
   const { items, rootHref } = navByApp[app];
   const pathname = usePathname();
+  const { t } = useT();
   return (
     <nav aria-label="Primary" className="hidden md:block">
       <ul className="flex items-center gap-1">
-        {items.map(({ href, label, icon: Icon }) => {
+        {items.map(({ href, label, icon: Icon, i18nKey }) => {
           const active = isNavActive(pathname, href, rootHref);
           return (
             <li key={href}>
@@ -25,7 +27,7 @@ export function TopNav({ app }: { app: NavApp }) {
                 )}
               >
                 <Icon className="size-4" aria-hidden />
-                {label}
+                {i18nKey ? t(i18nKey) : label}
               </Link>
             </li>
           );

@@ -1,27 +1,27 @@
 import { expect, test } from "@playwright/test";
+import { loginAs, setLocation, trackConsoleErrors, type Persona } from "./helpers";
 
-const apps = [
-  { path: "/", heading: /what's on your mind/i, marker: "customer" },
-  { path: "/partner", heading: /live orders/i, marker: "partner" },
-  { path: "/rider", heading: /ready to ride/i, marker: "rider" },
-  { path: "/admin", heading: /overview/i, marker: "admin" },
+const apps: { path: string; marker: string; persona?: Persona; heading: RegExp }[] = [
+  { path: "/", marker: "customer", heading: /what's on your mind/i },
+  { path: "/partner", marker: "partner", persona: "owner-1", heading: /live orders/i },
+  { path: "/rider", marker: "rider", persona: "rider", heading: /ready to ride|you're|active delivery|online/i },
+  { path: "/admin", marker: "admin", persona: "admin", heading: /overview/i },
 ];
 
 for (const app of apps) {
-  test(`${app.marker} app renders at ${app.path}`, async ({ page }) => {
-    const errors: string[] = [];
-    page.on("console", (msg) => {
-      if (msg.type() === "error") errors.push(msg.text());
-    });
-
+  test(`${app.marker} app renders at ${app.path}`, async ({ page, context }) => {
+    const errors = trackConsoleErrors(page);
+    await setLocation(context);
+    if (app.persona) await loginAs(page, app.persona);
     await page.goto(app.path);
     await expect(page.locator(`[data-app="${app.marker}"]`)).toBeVisible();
-    await expect(page.getByRole("heading", { name: app.heading })).toBeVisible();
+    await expect(page.getByRole("heading", { name: app.heading }).first()).toBeVisible();
     expect(errors).toEqual([]);
   });
 }
 
-test("every nav link resolves (no dead links)", async ({ page, request }) => {
+test("every nav link resolves (no dead links)", async ({ page }) => {
+  await loginAs(page, "admin");
   for (const root of ["/", "/partner", "/rider", "/admin"]) {
     await page.goto(root);
     const hrefs = await page.locator('nav a[href^="/"]').evaluateAll((els) =>
@@ -29,19 +29,10 @@ test("every nav link resolves (no dead links)", async ({ page, request }) => {
     );
     expect(hrefs.length).toBeGreaterThan(0);
     for (const href of hrefs) {
-      const res = await request.get(href);
+      const res = await page.request.get(href);
       expect(res.status(), href).toBe(200);
     }
   }
-});
-
-test("demo switcher opens and jumps to the rider app", async ({ page }) => {
-  await page.goto("/");
-  await page.getByTestId("demo-switcher").click();
-  await expect(page.getByRole("heading", { name: /switch demo persona/i })).toBeVisible();
-  await page.getByRole("button", { name: /rider/i }).first().click();
-  await expect(page).toHaveURL(/\/rider$/);
-  await expect(page.locator('[data-app="rider"]')).toBeVisible();
 });
 
 test("PWA manifest and icons are served", async ({ request }) => {

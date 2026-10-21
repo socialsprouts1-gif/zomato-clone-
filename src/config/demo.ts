@@ -5,6 +5,8 @@ import type { AppKey } from "@/config/brand";
  * the seed script (Phase 1) with password DEMO_PASSWORD.
  */
 export const DEMO_PASSWORD = "Demo@1234";
+/** Phone OTP in demo mode (no SMS is sent). */
+export const DEMO_OTP = "123456";
 
 export type DemoPersona = {
   id: string;

@@ -3,19 +3,21 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { isNavActive, navByApp, type NavApp } from "@/config/navigation";
+import { useT } from "@/lib/i18n/client";
 import { cn } from "@/lib/utils";
 
 /** Native-app style tab bar, shown on phones only. */
 export function BottomTabBar({ app }: { app: NavApp }) {
   const { items, rootHref } = navByApp[app];
   const pathname = usePathname();
+  const { t } = useT();
   return (
     <nav
       aria-label="Primary"
       className="pb-safe fixed inset-x-0 bottom-0 z-30 border-t bg-card/95 backdrop-blur md:hidden"
     >
       <ul className="mx-auto flex max-w-lg">
-        {items.map(({ href, label, icon: Icon }) => {
+        {items.map(({ href, label, icon: Icon, i18nKey }) => {
           const active = isNavActive(pathname, href, rootHref);
           return (
             <li key={href} className="flex-1">
@@ -28,7 +30,7 @@ export function BottomTabBar({ app }: { app: NavApp }) {
                 )}
               >
                 <Icon className={cn("size-5", active && "stroke-[2.5]")} aria-hidden />
-                {label}
+                {i18nKey ? t(i18nKey) : label}
               </Link>
             </li>
           );

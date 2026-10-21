@@ -2,7 +2,10 @@ import type { Metadata, Viewport } from "next";
 import { Inter, Plus_Jakarta_Sans } from "next/font/google";
 import { DemoSwitcher } from "@/components/demo/demo-switcher";
 import { brand } from "@/config/brand";
+import { getSessionUser } from "@/lib/auth/session";
 import { isDemoMode } from "@/lib/env";
+import { I18nProvider } from "@/lib/i18n/client";
+import { getPreferences } from "@/lib/preferences";
 import { Providers } from "./providers";
 import "./globals.css";
 
@@ -29,9 +32,10 @@ export const viewport: Viewport = {
   viewportFit: "cover",
 };
 
-export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
+export default async function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
+  const [prefs, user] = await Promise.all([getPreferences(), getSessionUser()]);
   return (
-    <html lang="en" suppressHydrationWarning className={`${sans.variable} ${display.variable}`}>
+    <html lang={prefs.locale} suppressHydrationWarning className={`${sans.variable} ${display.variable}`}>
       <body>
         <a
           href="#main"
@@ -40,8 +44,10 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
           Skip to content
         </a>
         <Providers>
-          {children}
-          {isDemoMode ? <DemoSwitcher /> : null}
+          <I18nProvider locale={prefs.locale}>
+            {children}
+            {isDemoMode ? <DemoSwitcher currentEmail={user?.email ?? null} /> : null}
+          </I18nProvider>
         </Providers>
       </body>
     </html>
