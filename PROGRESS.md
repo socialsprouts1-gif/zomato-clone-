@@ -58,15 +58,15 @@ Ticked only when verified working (tests or manual check).
 
 ## 3.5 Cart & checkout
 - [x] Floating View cart bar
-- [ ] Cart page: steppers, edit customisation, cooking instructions, no cutlery
-- [ ] Address selector + delivery instructions
-- [ ] Schedule order (2h–2d)
-- [ ] Rider tip
-- [ ] Coupons with validation rules
-- [ ] Server-side bill details
+- [x] Cart page: steppers, edit customisation, cooking instructions, no cutlery
+- [x] Address selector + delivery instructions
+- [x] Schedule order (2h–2d)
+- [x] Rider tip
+- [x] Coupons with validation rules
+- [x] Server-side bill details
 - [ ] Group order with live updates
-- [ ] Razorpay test / COD / Wallet / split payment
-- [ ] Order placed animation
+- [x] Razorpay test / COD / Wallet / split payment (verified with the demo checkout; real Razorpay test mode needs keys)
+- [x] Order placed animation
 
 ## 3.6 Live tracking
 - [ ] Status timeline
@@ -100,7 +100,7 @@ Ticked only when verified working (tests or manual check).
 - [ ] Favourites + custom shareable collections
 - [ ] Notifications center + browser push
 - [ ] Help center: FAQ, tickets, support chat
-- [ ] Donation round-up at checkout
+- [x] Donation round-up at checkout
 
 ## 3.12 Live / Events
 - [ ] Event cards → ticket booking → QR ticket

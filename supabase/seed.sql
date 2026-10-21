@@ -7652,14 +7652,14 @@ insert into public.review_replies (id, review_id, author_id, body, created_at) v
   ('d27095d1-437d-4497-a198-99b1ffd18921', '80577416-f1f5-4f77-a588-1e082c51b4b1', null, 'Thank you so much! We''re glad you enjoyed it. See you again soon.', now() - interval '6753 minutes');
 
 insert into public.coupons (id, code, title, description, discount_type, discount_value, max_discount_paise, min_order_paise, first_order_only, gold_only, payment_method, restaurant_id, per_user_limit, valid_until, is_active, used_count) values
-  ('9106ef10-f0cd-4bcf-a7b2-00cf52a6d970', 'WELCOME50', '50% off your first order', 'Up to ₹100 off on orders above ₹199. First order only.', 'percent', 50, 10000, 19900, true, false, null, null, 1, now() + interval '90 days', true, 685),
-  ('fcd44d2e-2759-4fe0-aebd-be40ad86663a', 'GOLD100', 'Flat ₹100 off for Gold members', 'On orders above ₹499.', 'flat', 10000, null, 49900, false, true, null, null, 5, now() + interval '90 days', true, 681),
-  ('5933253c-8442-47fb-a4d5-39b3602b0b47', 'UPI20', '20% off with UPI', 'Up to ₹75 off when you pay by UPI.', 'percent', 20, 7500, 24900, false, false, 'upi', null, 3, now() + interval '90 days', true, 479),
-  ('79546481-39d4-4606-a34b-4a89b4a521e0', 'FLAT75', 'Flat ₹75 off', 'On orders above ₹399.', 'flat', 7500, null, 39900, false, false, null, null, 3, now() + interval '90 days', true, 525),
-  ('4804fd18-51f9-4e9a-a130-cf8543243be2', 'FREEDEL', 'Free delivery', 'No delivery fee on orders above ₹249.', 'free_delivery', 0, null, 24900, false, false, null, null, 5, now() + interval '90 days', true, 73),
-  ('447a9432-3745-4f3f-ab98-fbd3d5488812', 'PARTY150', '₹150 off on big orders', 'On orders above ₹999. Perfect for group orders.', 'flat', 15000, null, 99900, false, false, null, null, 2, now() + interval '90 days', true, 505),
-  ('395e0d2a-2370-48a9-a7ca-a6b52d54150c', 'CARD15', '15% off with cards', 'Up to ₹120 off on credit and debit cards.', 'percent', 15, 12000, 39900, false, false, 'card', null, 2, now() + interval '90 days', true, 633),
-  ('8fbd9607-f8e5-4710-aa0f-b4ca5a93df36', 'WEEKEND60', '60% off this weekend', 'Up to ₹120 off on orders above ₹249.', 'percent', 60, 12000, 24900, false, false, null, null, 1, now() + interval '90 days', true, 517),
+  ('9106ef10-f0cd-4bcf-a7b2-00cf52a6d970', 'WELCOME50', '50% off · welcome offer', 'Up to ₹100 off on orders above ₹199. Use up to 3 times.', 'percent', 50, 10000, 19900, false, false, null, null, 3, now() + interval '90 days', true, 685),
+  ('e42fa1a7-d275-4b43-a0a1-2b506f6fcf07', 'FIRSTBITE', '₹125 off your first order', 'On orders above ₹249. First order on Thaali only.', 'flat', 12500, null, 24900, true, false, null, null, 1, now() + interval '90 days', true, 681),
+  ('fcd44d2e-2759-4fe0-aebd-be40ad86663a', 'GOLD100', 'Flat ₹100 off for Gold members', 'On orders above ₹499.', 'flat', 10000, null, 49900, false, true, null, null, 5, now() + interval '90 days', true, 479),
+  ('5933253c-8442-47fb-a4d5-39b3602b0b47', 'UPI20', '20% off with UPI', 'Up to ₹75 off when you pay by UPI.', 'percent', 20, 7500, 24900, false, false, 'upi', null, 3, now() + interval '90 days', true, 525),
+  ('79546481-39d4-4606-a34b-4a89b4a521e0', 'FLAT75', 'Flat ₹75 off', 'On orders above ₹399.', 'flat', 7500, null, 39900, false, false, null, null, 3, now() + interval '90 days', true, 73),
+  ('4804fd18-51f9-4e9a-a130-cf8543243be2', 'FREEDEL', 'Free delivery', 'No delivery fee on orders above ₹249.', 'free_delivery', 0, null, 24900, false, false, null, null, 5, now() + interval '90 days', true, 505),
+  ('447a9432-3745-4f3f-ab98-fbd3d5488812', 'PARTY150', '₹150 off on big orders', 'On orders above ₹999. Perfect for group orders.', 'flat', 15000, null, 99900, false, false, null, null, 2, now() + interval '90 days', true, 633),
+  ('395e0d2a-2370-48a9-a7ca-a6b52d54150c', 'CARD15', '15% off with cards', 'Up to ₹120 off on credit and debit cards.', 'percent', 15, 12000, 39900, false, false, 'card', null, 2, now() + interval '90 days', true, 517),
   ('2b2d0c33-43ab-42e9-a093-336fdc8480f8', 'TRYNEW', '40% off', 'Up to ₹80 off on orders above ₹159.', 'percent', 40, 8000, 15900, false, false, null, null, 10, now() + interval '90 days', true, 469),
   ('e37854dd-e491-4cb4-a19f-77d1a8683616', 'BIRYANI99', '₹99 off at Baner Biryani House', 'On orders above ₹449.', 'flat', 9900, null, 44900, false, false, null, 'c14210a5-380d-4b44-aa16-eb42618162e2', 2, now() + interval '90 days', true, 279);
 
@@ -7692,7 +7692,7 @@ insert into public.ad_campaigns (id, restaurant_id, name, daily_budget_paise, st
 update public.restaurants set sponsored_until = now() + interval '24 days' where id = '62a2ccbe-05d4-497b-a406-c6e8bad407fc';
 
 insert into public.banners (id, title, subtitle, cta_label, link_url, theme, image_url, sort, is_active) values
-  ('e09cd39d-d846-4489-a849-00db578c89c5', '50% off your first order', 'Use code WELCOME50 · up to ₹100', 'Order now', '/search?offers=1', 'saffron', 'https://images.unsplash.com/photo-1563379091339-03b21ab4a4f8?auto=format&fit=crop&w=800&q=70', 0, true),
+  ('e09cd39d-d846-4489-a849-00db578c89c5', '50% off with WELCOME50', 'Up to ₹100 off · new to Thaali? Try FIRSTBITE', 'Order now', '/?offers=1', 'saffron', 'https://images.unsplash.com/photo-1563379091339-03b21ab4a4f8?auto=format&fit=crop&w=800&q=70', 0, true),
   ('26cbfb8a-fede-401f-a727-bf9bb2508884', 'Thaali Gold', 'Free delivery, extra discounts and more', 'Join Gold', '/gold', 'gold', 'https://images.unsplash.com/photo-1414235077428-338989a2e8c0?auto=format&fit=crop&w=1200&q=70', 1, true),
   ('29813bda-319c-4a3e-a03a-e6b85dcd21a1', 'Healthy, but make it tasty', 'Bowls with full macros from ₹249', 'Explore', '/collections/healthy-and-happy', 'green', 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=800&q=70', 2, true),
   ('c2b078bb-e3f1-4730-a1d0-f14ee5fdb7e1', 'Book a table this weekend', 'Flat 20% off at partner restaurants', 'Dining out', '/dining', 'plum', 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=1200&q=70', 3, true),
@@ -7880,7 +7880,7 @@ insert into public.referrals (id, referrer_id, referee_id, status, reward_paise,
   ('5ed63781-a7ba-4bd3-a83a-9763f9d90bc3', '4d0ff807-6b7f-4156-aca7-c89fa315cd19', '84f6430b-ae20-4ccb-ae3a-f0de2e06b690', 'rewarded', 10000, now() - interval '28800 minutes');
 
 insert into public.notifications (id, user_id, type, title, body, link, read_at, created_at) values
-  ('29b05a97-9f82-4c26-ad97-d7fcdb6c3bc2', 'b60d1b15-1aeb-415c-adfa-8bf5db2e71a8', 'offer', 'WEEKEND60 is live', '60% off up to ₹120 this weekend. Treat yourself!', '/search?offers=1', null, now() - interval '90 minutes'),
+  ('29b05a97-9f82-4c26-ad97-d7fcdb6c3bc2', 'b60d1b15-1aeb-415c-adfa-8bf5db2e71a8', 'offer', 'WELCOME50 is live', '50% off up to ₹100 on your next order. Treat yourself!', '/search?offers=1', null, now() - interval '90 minutes'),
   ('356872f8-05a1-4dcd-a225-ddc31a9d2da4', 'b60d1b15-1aeb-415c-adfa-8bf5db2e71a8', 'info', 'Welcome to Thaali', 'Use WELCOME50 on your first order.', '/', now() - interval '1440 minutes', now() - interval '43200 minutes');
 
 insert into public.table_bookings (id, booking_code, user_id, restaurant_id, table_id, offer_id, booking_date, time_slot, guests, status, special_request, customer_name, customer_phone) values

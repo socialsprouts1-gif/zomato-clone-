@@ -46,3 +46,11 @@ export async function clearSearchHistory() {
   const supabase = await getSupabaseServerClient();
   await supabase.from("search_history").delete().eq("user_id", user.id);
 }
+
+/** Full item (variants + add-ons) for editing a cart line. */
+export async function getMenuItemForEdit(itemId: string) {
+  const { ITEM_COLUMNS } = await import("./menu");
+  const supabase = await getSupabaseServerClient();
+  const { data } = await supabase.from("menu_items").select(ITEM_COLUMNS).eq("id", itemId).maybeSingle();
+  return data as import("./menu-shared").MenuItem | null;
+}

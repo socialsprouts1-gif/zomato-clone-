@@ -608,15 +608,15 @@ const bbh = seededRestaurants.find((r) => r.name === "Baner Biryani House")!;
 const napoli = seededRestaurants.find((r) => r.name === "Napoli Fire Oven")!;
 const greenBowl = seededRestaurants.find((r) => r.name === "Green Bowl Co.")!;
 insert("public.coupons", [
-  { code: "WELCOME50", title: "50% off your first order", description: "Up to ₹100 off on orders above ₹199. First order only.", discount_type: "percent", discount_value: 50, max_discount_paise: paise(100), min_order_paise: paise(199), first_order_only: true, gold_only: false, payment_method: null, restaurant_id: null, per_user_limit: 1 },
+  { code: "WELCOME50", title: "50% off · welcome offer", description: "Up to ₹100 off on orders above ₹199. Use up to 3 times.", discount_type: "percent", discount_value: 50, max_discount_paise: paise(100), min_order_paise: paise(199), first_order_only: false, gold_only: false, payment_method: null, restaurant_id: null, per_user_limit: 3 },
+  { code: "FIRSTBITE", title: "₹125 off your first order", description: "On orders above ₹249. First order on Thaali only.", discount_type: "flat", discount_value: paise(125), max_discount_paise: null, min_order_paise: paise(249), first_order_only: true, gold_only: false, payment_method: null, restaurant_id: null, per_user_limit: 1 },
   { code: "GOLD100", title: "Flat ₹100 off for Gold members", description: "On orders above ₹499.", discount_type: "flat", discount_value: paise(100), max_discount_paise: null, min_order_paise: paise(499), first_order_only: false, gold_only: true, payment_method: null, restaurant_id: null, per_user_limit: 5 },
   { code: "UPI20", title: "20% off with UPI", description: "Up to ₹75 off when you pay by UPI.", discount_type: "percent", discount_value: 20, max_discount_paise: paise(75), min_order_paise: paise(249), first_order_only: false, gold_only: false, payment_method: "upi", restaurant_id: null, per_user_limit: 3 },
   { code: "FLAT75", title: "Flat ₹75 off", description: "On orders above ₹399.", discount_type: "flat", discount_value: paise(75), max_discount_paise: null, min_order_paise: paise(399), first_order_only: false, gold_only: false, payment_method: null, restaurant_id: null, per_user_limit: 3 },
   { code: "FREEDEL", title: "Free delivery", description: "No delivery fee on orders above ₹249.", discount_type: "free_delivery", discount_value: 0, max_discount_paise: null, min_order_paise: paise(249), first_order_only: false, gold_only: false, payment_method: null, restaurant_id: null, per_user_limit: 5 },
   { code: "PARTY150", title: "₹150 off on big orders", description: "On orders above ₹999. Perfect for group orders.", discount_type: "flat", discount_value: paise(150), max_discount_paise: null, min_order_paise: paise(999), first_order_only: false, gold_only: false, payment_method: null, restaurant_id: null, per_user_limit: 2 },
   { code: "CARD15", title: "15% off with cards", description: "Up to ₹120 off on credit and debit cards.", discount_type: "percent", discount_value: 15, max_discount_paise: paise(120), min_order_paise: paise(399), first_order_only: false, gold_only: false, payment_method: "card", restaurant_id: null, per_user_limit: 2 },
-  { code: "WEEKEND60", title: "60% off this weekend", description: "Up to ₹120 off on orders above ₹249.", discount_type: "percent", discount_value: 60, max_discount_paise: paise(120), min_order_paise: paise(249), first_order_only: false, gold_only: false, payment_method: null, restaurant_id: null, per_user_limit: 1 },
-  { code: "TRYNEW", title: "40% off", description: "Up to ₹80 off on orders above ₹159.", discount_type: "percent", discount_value: 40, max_discount_paise: paise(80), min_order_paise: paise(159), first_order_only: false, gold_only: false, payment_method: null, restaurant_id: null, per_user_limit: 10 },
+    { code: "TRYNEW", title: "40% off", description: "Up to ₹80 off on orders above ₹159.", discount_type: "percent", discount_value: 40, max_discount_paise: paise(80), min_order_paise: paise(159), first_order_only: false, gold_only: false, payment_method: null, restaurant_id: null, per_user_limit: 10 },
   { code: "BIRYANI99", title: "₹99 off at Baner Biryani House", description: "On orders above ₹449.", discount_type: "flat", discount_value: paise(99), max_discount_paise: null, min_order_paise: paise(449), first_order_only: false, gold_only: false, payment_method: null, restaurant_id: bbh.id, per_user_limit: 2 },
 ].map((c, i) => ({ id: uid(`coupon:${c.code}`), ...c, valid_until: raw("now() + interval '90 days'"), is_active: true, used_count: int(20, 900) + i })));
 
@@ -649,7 +649,7 @@ out.push(`update public.restaurants set sponsored_until = now() + interval '24 d
 
 // ---------- banners, collections, gold, events ----------
 insert("public.banners", [
-  { title: "50% off your first order", subtitle: "Use code WELCOME50 · up to ₹100", cta_label: "Order now", link_url: "/?offers=1", theme: "saffron", image_url: img.biryani[0] },
+  { title: "50% off with WELCOME50", subtitle: "Up to ₹100 off · new to Thaali? Try FIRSTBITE", cta_label: "Order now", link_url: "/?offers=1", theme: "saffron", image_url: img.biryani[0] },
   { title: "Thaali Gold", subtitle: "Free delivery, extra discounts and more", cta_label: "Join Gold", link_url: "/gold", theme: "gold", image_url: img.restaurant[1] },
   { title: "Healthy, but make it tasty", subtitle: "Bowls with full macros from ₹249", cta_label: "Explore", link_url: "/collections/healthy-and-happy", theme: "green", image_url: img.salad[0] },
   { title: "Book a table this weekend", subtitle: "Flat 20% off at partner restaurants", cta_label: "Dining out", link_url: "/dining", theme: "plum", image_url: img.restaurant[0] },
@@ -704,7 +704,7 @@ insert("public.referrals", [
   { id: uid("ref:c2c3"), referrer_id: pid("customer2"), referee_id: pid("customer3"), status: "rewarded", reward_paise: paise(100), rewarded_at: ago(60 * 24 * 20) },
 ]);
 insert("public.notifications", [
-  { id: uid("notif:1"), user_id: pid("customer1"), type: "offer", title: "WEEKEND60 is live", body: "60% off up to ₹120 this weekend. Treat yourself!", link: "/search?offers=1", read_at: null, created_at: ago(90) },
+  { id: uid("notif:1"), user_id: pid("customer1"), type: "offer", title: "WELCOME50 is live", body: "50% off up to ₹100 on your next order. Treat yourself!", link: "/search?offers=1", read_at: null, created_at: ago(90) },
   { id: uid("notif:2"), user_id: pid("customer1"), type: "info", title: "Welcome to Thaali", body: "Use WELCOME50 on your first order.", link: "/", read_at: ago(60 * 24), created_at: ago(60 * 24 * 30) },
 ]);
 insert("public.table_bookings", [

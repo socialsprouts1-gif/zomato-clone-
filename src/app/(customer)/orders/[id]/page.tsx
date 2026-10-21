@@ -3,6 +3,8 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { BillBreakdown } from "@/components/orders/bill-breakdown";
+import { PlacedOverlay } from "@/components/orders/placed-overlay";
+import { Suspense } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { requireUser } from "@/lib/auth/session";
@@ -30,6 +32,9 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
 
   return (
     <div className="mx-auto max-w-3xl space-y-4">
+      <Suspense>
+        <PlacedOverlay scheduled={order.status === "SCHEDULED"} />
+      </Suspense>
       <div className="flex flex-wrap items-center justify-between gap-2">
         <div>
           <h1 className="font-display text-2xl font-bold">Order #{order.order_number}</h1>

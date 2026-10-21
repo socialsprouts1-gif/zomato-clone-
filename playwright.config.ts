@@ -1,5 +1,11 @@
 import { defineConfig, devices } from "@playwright/test";
 
+try {
+  process.loadEnvFile(".env.local");
+} catch {
+  // no local env file (CI provides env vars)
+}
+
 const PORT = Number(process.env.PORT ?? 3100);
 const baseURL = process.env.PLAYWRIGHT_BASE_URL ?? `http://localhost:${PORT}`;
 
@@ -8,7 +14,8 @@ const executablePath = process.env.PLAYWRIGHT_CHROMIUM_PATH || undefined;
 
 export default defineConfig({
   testDir: "./e2e",
-  fullyParallel: true,
+  fullyParallel: false,
+  workers: 1, // tests share demo accounts and one database
   forbidOnly: Boolean(process.env.CI),
   retries: process.env.CI ? 1 : 0,
   reporter: process.env.CI ? "github" : "list",
