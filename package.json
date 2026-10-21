@@ -9,7 +9,11 @@
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
     "test:e2e": "playwright test",
-    "check": "pnpm typecheck && pnpm lint && pnpm build"
+    "check": "pnpm typecheck && pnpm lint && pnpm build",
+    "seed:generate": "tsx scripts/seed/generate.ts",
+    "seed": "tsx --env-file=.env.local scripts/seed/apply.ts",
+    "dev:stack": "scripts/dev-stack/start.sh",
+    "test:rls": "tsx --env-file=.env.local scripts/rls-test.ts"
   },
   "dependencies": {
     "@hookform/resolvers": "^6.0.0",
@@ -43,12 +47,17 @@
     "@tailwindcss/postcss": "^4",
     "@types/leaflet": "^1.9.22",
     "@types/node": "^20",
+    "@types/pg": "^8.23.1",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "@types/ws": "^8.18.2",
     "eslint": "^9",
     "eslint-config-next": "15.5.28",
+    "pg": "^8.23.1",
     "tailwindcss": "^4",
-    "typescript": "^5"
+    "tsx": "^4.23.15",
+    "typescript": "^5",
+    "ws": "^8.22.0"
   },
   "packageManager": "pnpm@10.28.0",
   "engines": {
