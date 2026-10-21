@@ -18,6 +18,8 @@ export type Database = {
           orders: number;
           spend_paise: number;
           created_at: string;
+          last_ticked_at: string;
+          updated_at: string;
         };
         Insert: {
           id?: string;
@@ -32,6 +34,8 @@ export type Database = {
           orders?: number;
           spend_paise?: number;
           created_at?: string;
+          last_ticked_at?: string;
+          updated_at?: string;
         };
         Update: {
           id?: string;
@@ -46,6 +50,8 @@ export type Database = {
           orders?: number;
           spend_paise?: number;
           created_at?: string;
+          last_ticked_at?: string;
+          updated_at?: string;
         };
         Relationships: [
           {
@@ -2328,6 +2334,7 @@ export type Database = {
           owner_phone: string | null;
           owner_email: string | null;
           updated_at: string;
+          documents: Json;
         };
         Insert: {
           restaurant_id: string;
@@ -2340,6 +2347,7 @@ export type Database = {
           owner_phone?: string | null;
           owner_email?: string | null;
           updated_at?: string;
+          documents?: Json;
         };
         Update: {
           restaurant_id?: string;
@@ -2352,6 +2360,7 @@ export type Database = {
           owner_phone?: string | null;
           owner_email?: string | null;
           updated_at?: string;
+          documents?: Json;
         };
         Relationships: [
           {
@@ -3312,18 +3321,23 @@ export type Database = {
     Views: { [_ in never]: never };
     Functions: {
       addon_group_restaurant: { Args: { gid: string }; Returns: string };
+      adjust_menu_stock: { Args: { p_item: string; p_delta: number }; Returns: number };
       can_see_restaurant: { Args: { rid: string }; Returns: boolean };
       can_view_order: { Args: { oid: string }; Returns: boolean };
       current_user_role: { Args: Record<PropertyKey, never>; Returns: Database["public"]["Enums"]["user_role"] };
       find_nearest_rider: { Args: { p_lat: number; p_lng: number; max_km: number; exclude?: string[] }; Returns: string };
+      generate_restaurant_payout: { Args: { rid: string; p_start: unknown; p_end: unknown }; Returns: Database["public"]["Tables"]["payouts"]["Row"] };
       has_active_order_with_rider: { Args: { rid: string }; Returns: boolean };
       haversine_km: { Args: { lat1: number; lng1: number; lat2: number; lng2: number }; Returns: number };
       is_admin: { Args: Record<PropertyKey, never>; Returns: boolean };
       is_cart_member: { Args: { cid: string }; Returns: boolean };
       is_restaurant_member: { Args: { rid: string }; Returns: boolean };
       is_service_context: { Args: Record<PropertyKey, never>; Returns: boolean };
+      ist_window: { Args: { p_start: unknown; p_end: unknown }; Returns: unknown };
       item_restaurant: { Args: { iid: string }; Returns: string };
       my_restaurant_ids: { Args: Record<PropertyKey, never>; Returns: string[] };
+      partner_report: { Args: { rid: string; p_from: unknown; p_to: unknown }; Returns: Json };
+      payout_statement: { Args: { rid: string; p_start: unknown; p_end: unknown }; Returns: Json };
       popular_items: { Args: { p_restaurant: string; lim?: number }; Returns: { menu_item_id: string; orders: number }[] };
       random_code: { Args: { len: number }; Returns: string };
       restaurant_order_counts: { Args: { days?: number }; Returns: { restaurant_id: string; orders: number }[] };

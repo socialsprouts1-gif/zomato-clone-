@@ -733,6 +733,142 @@ insert("public.analytics_events", approved.flatMap((r) => {
   return rows;
 }));
 
+// ---------- partner reports history (Phase 8) ----------
+// ~60 days of delivered / rejected / cancelled orders and funnel events for the demo partners' outlets,
+// so business reports and weekly payouts have realistic shape. Uses its own PRNG so the sections above
+// stay byte-identical; rows are marked with the "history:" uid namespace.
+out.push("-- BEGIN partner-history");
+{
+  let hs = 8_2026;
+  const hrand = () => {
+    hs = (hs + 0x6d2b79f5) | 0;
+    let t = Math.imul(hs ^ (hs >>> 15), 1 | hs);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+  const hint = (a: number, b: number) => Math.floor(a + hrand() * (b - a + 1));
+  const hpick = <T,>(arr: readonly T[]): T => arr[Math.floor(hrand() * arr.length)]!;
+  // Restaurant-local IST clock time, `days` ago, `minute` minutes after midnight.
+  out.push(`create or replace function pg_temp.ist(d int, m int) returns timestamptz language sql stable as
+  $$ select (date_trunc('day', now() at time zone 'Asia/Kolkata') - make_interval(days => d) + make_interval(mins => m)) at time zone 'Asia/Kolkata' $$;`);
+  const istAt = (days: number, minute: number) => raw(`pg_temp.ist(${days},${Math.round(minute)})`);
+  // Lunch and dinner peaks, a little breakfast/evening trade.
+  const hourWeights: [number, number][] = [[8, 1], [9, 1], [10, 1], [11, 2], [12, 6], [13, 8], [14, 5], [15, 2], [16, 1], [17, 2], [18, 3], [19, 6], [20, 9], [21, 9], [22, 6], [23, 2]];
+  const totalW = hourWeights.reduce((s, [, w]) => s + w, 0);
+  const pickHour = () => {
+    let x = hrand() * totalW;
+    for (const [h, w] of hourWeights) if ((x -= w) <= 0) return h;
+    return 20;
+  };
+  const historyOutlets = [
+    { r: saffron, perDay: [5, 10] as const, offerId: uid("offer:saffron20") },
+    { r: napoli, perDay: [3, 6] as const, offerId: null },
+    { r: bbh, perDay: [3, 7] as const, offerId: null },
+    { r: greenBowl, perDay: [2, 5] as const, offerId: null },
+  ];
+  const hOrders: Record<string, Val>[] = [];
+  const hItems: Record<string, Val>[] = [];
+  const hEvents: Record<string, Val>[] = [];
+  const funnel: string[] = [];
+  for (const { r, perDay, offerId } of historyOutlets) {
+    const menu = itemsByRestaurant.get(r.id)!;
+    const prep = r.prep ?? 15;
+    for (let day = 1; day <= 60; day++) {
+      const weekend = day % 7 === 3 || day % 7 === 4; // a busier two-day stretch each week
+      const n = hint(perDay[0], perDay[1]) + (weekend ? hint(1, 3) : 0);
+      let placed = 0;
+      for (let k = 0; k < n; k++) {
+        const id = uid(`history:order:${r.id}:${day}:${k}`);
+        const minute = pickHour() * 60 + hint(0, 59);
+        const roll = hrand();
+        const status = roll < 0.06 ? "REJECTED" : roll < 0.1 ? "CANCELLED_BY_CUSTOMER" : roll < 0.12 ? "CANCELLED" : "DELIVERED";
+        const lines = [...new Map(Array.from({ length: hint(1, 3) }, () => hpick(menu)).map((l) => [l.id, l])).values()];
+        let itemTotal = 0;
+        for (const l of lines) {
+          const qty = hint(1, 3);
+          const variant = l.variants[0];
+          const unit = variant?.price ?? l.price;
+          itemTotal += unit * qty;
+          hItems.push({
+            id: uid(`history:item:${id}:${l.id}`), order_id: id, menu_item_id: l.id, name: l.name, variant_name: variant?.name ?? null,
+            addons: [], quantity: qty, unit_price_paise: unit, total_paise: unit * qty, is_veg: l.veg, added_by_name: null,
+          });
+        }
+        const reviewerIdx = hint(0, reviewerNames.length - 1);
+        const areaName = (["Koregaon Park", "Baner", "Kothrud", "Viman Nagar", "Hinjewadi"] as const)[reviewerIdx % 5]!;
+        const area = areas[areaName];
+        const lat = +(area.lat + (hrand() - 0.5) * 0.02).toFixed(5), lng = +(area.lng + (hrand() - 0.5) * 0.02).toFixed(5);
+        const km = Math.min(9.5, +haversine(r.lat, r.lng, lat, lng).toFixed(2));
+        const delivery = feeFor(km);
+        const platform = paise(10);
+        const packaging = paise(r.cft >= 700 ? 30 : r.cft >= 400 ? 20 : 10);
+        const useOffer = Boolean(offerId && itemTotal >= paise(499) && hrand() < 0.25);
+        const discount = useOffer ? Math.min(Math.floor(itemTotal * 0.2), paise(150)) : 0;
+        const gst = Math.round((itemTotal - discount) * 0.05);
+        const tip = hpick([0, 0, 0, paise(20), paise(30)]);
+        const total = itemTotal + delivery + platform + packaging + gst + tip - discount;
+        const method = hpick(["razorpay", "razorpay", "razorpay", "cod"] as const);
+        const delivered = status === "DELIVERED";
+        const refunded = !delivered && method === "razorpay";
+        const deliverMin = minute + prep + 12 + Math.round(km * 4);
+        placed++;
+        const riderKey = hpick(riderKeys);
+        hOrders.push({
+          id, customer_id: pid(`reviewer${reviewerIdx + 1}`), restaurant_id: r.id, rider_id: delivered ? pid(riderKey) : null, address_id: null,
+          status, source: "app", customer_name: reviewerNames[reviewerIdx]!, customer_phone: `+91981000${1000 + reviewerIdx}`,
+          delivery_address: { label: "Home", line1: `${hint(1, 300)}, ${areaName}, Pune`, lat, lng },
+          delivery_instructions: {}, cooking_instructions: null, no_cutlery: hrand() < 0.4, distance_km: km,
+          eta_minutes: Math.round(prep + 8 + km * 4), prep_minutes: prep, scheduled_for: null,
+          item_total_paise: itemTotal, delivery_fee_paise: delivery, platform_fee_paise: platform, packaging_fee_paise: packaging,
+          gst_paise: gst, tip_paise: tip, discount_paise: discount, donation_paise: 0, total_paise: total, wallet_used_paise: 0,
+          payable_paise: total, gold_savings_paise: 0, coupon_code: useOffer ? "SAFFRON20" : null, restaurant_offer_id: useOffer ? offerId : null,
+          payment_method: method, payment_method_detail: method === "cod" ? null : hpick(["upi", "card", "upi", "netbanking"]),
+          payment_status: delivered ? (method === "cod" ? "cod_collected" : "paid") : refunded ? "refunded" : "pending",
+          refund_paise: refunded ? total : 0, refund_to: refunded ? "original" : null, refunded_at: refunded ? istAt(day, minute + 4) : null,
+          placed_at: istAt(day, minute), accepted_at: status === "DELIVERED" || status === "CANCELLED" ? istAt(day, minute + 2) : null,
+          ready_at: delivered ? istAt(day, minute + prep) : null, rider_assigned_at: delivered ? istAt(day, minute + prep - 3) : null,
+          rider_at_restaurant_at: delivered ? istAt(day, minute + prep) : null, picked_up_at: delivered ? istAt(day, minute + prep + 2) : null,
+          out_for_delivery_at: delivered ? istAt(day, minute + prep + 3) : null, delivered_at: delivered ? istAt(day, deliverMin) : null,
+          cancelled_at: status.startsWith("CANCELLED") ? istAt(day, minute + 3) : null,
+          cancel_reason: status === "CANCELLED_BY_CUSTOMER" ? "Ordered by mistake" : status === "CANCELLED" ? "Rider unavailable" : null,
+          reject_reason: status === "REJECTED" ? hpick(["Item out of stock", "Kitchen too busy", "Closing soon"]) : null,
+          is_gold_order: false, created_at: istAt(day, minute), updated_at: istAt(day, delivered ? deliverMin : minute + 3),
+        });
+        hEvents.push({ order_id: id, from_status: "PENDING_PAYMENT", to_status: "PLACED", actor_id: pid(`reviewer${reviewerIdx + 1}`), actor_role: "customer", note: null, created_at: istAt(day, minute) });
+        hEvents.push({
+          order_id: id, from_status: delivered ? "OUT_FOR_DELIVERY" : status === "CANCELLED" ? "ACCEPTED" : "PLACED", to_status: status,
+          actor_id: null, actor_role: delivered ? "rider" : status === "REJECTED" ? "restaurant" : status === "CANCELLED" ? "system" : "customer",
+          note: null, created_at: istAt(day, delivered ? deliverMin : minute + 3),
+        });
+      }
+      // funnel: views -> add to cart -> checkout -> placed (counts expanded in SQL below)
+      const checkouts = placed + hint(1, 3);
+      const carts = checkouts + hint(placed, placed * 2 + 3);
+      const views = carts * 3 + hint(5, 25);
+      funnel.push(`('${r.id}'::uuid, ${day}, ${views}, ${carts}, ${checkouts}, ${placed})`);
+    }
+  }
+  insert("public.orders", hOrders, " on conflict (id) do nothing");
+  insert("public.order_items", hItems, " on conflict (id) do nothing");
+  insert("public.order_events", hEvents);
+  out.push(`insert into public.analytics_events (restaurant_id, user_id, event, created_at)
+select f.rid, null, e.event, ((date_trunc('day', now() at time zone 'Asia/Kolkata') - make_interval(days => f.day)
+  + make_interval(mins => 600 + (g * 7919 + f.day * 31) % 780)) at time zone 'Asia/Kolkata')
+from (values
+  ${funnel.join(",\n  ")}
+) as f(rid, day, views, carts, checkouts, placed)
+cross join lateral (values ('menu_view', f.views), ('add_to_cart', f.carts), ('checkout_start', f.checkouts), ('order_placed', f.placed)) as e(event, n)
+cross join lateral generate_series(1, e.n) as g;`);
+  // Weekly payouts (Mon–Sun) for the last 8 complete weeks; all but the latest are marked paid.
+  out.push(`select count(*) as payouts_generated from (select public.generate_restaurant_payout(r.id, w.start::date, (w.start + interval '6 days')::date)
+from public.restaurants r
+cross join generate_series(date_trunc('week', (now() at time zone 'Asia/Kolkata')::date) - interval '8 weeks', date_trunc('week', (now() at time zone 'Asia/Kolkata')::date) - interval '1 week', interval '1 week') as w(start)
+where r.status = 'approved') as generated;
+update public.payouts set status = 'paid', paid_at = (period_end + 3)::timestamp at time zone 'Asia/Kolkata'
+where payee_type = 'restaurant' and status = 'generated' and period_end < date_trunc('week', (now() at time zone 'Asia/Kolkata')::date) - interval '1 week';`);
+}
+out.push("-- END partner-history");
+
 out.push(`-- recompute ratings from seeded reviews, keeping the curated headline rating where reviews are few
 update public.riders r set rating_count = greatest(r.rating_count, (select count(*) from public.reviews v where v.rider_id = r.id));
 commit;`);
