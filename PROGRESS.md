@@ -69,11 +69,11 @@ Ticked only when verified working (tests or manual check).
 - [x] Order placed animation
 
 ## 3.6 Live tracking
-- [ ] Status timeline
-- [ ] Live map with moving rider + ETA
-- [ ] Rider card, masked call, chat
-- [ ] Delivery OTP
-- [ ] Cancel rules (refund / Food Rescue)
+- [x] Status timeline
+- [x] Live map with moving rider + ETA
+- [ ] Rider card, masked call, chat (card + masked call done; chat in Phase 7)
+- [x] Delivery OTP
+- [x] Cancel rules (refund / Food Rescue)
 - [ ] Help chat from tracking
 
 ## 3.7 Post-order
@@ -122,15 +122,15 @@ Ticked only when verified working (tests or manual check).
 - [x] Auto-accept toggle
 
 ## 5. Rider
-- [ ] Onboarding with documents
-- [ ] Online/offline + live location
-- [ ] Incoming request with 30s countdown
-- [ ] Active delivery flow + Google Maps link + OTP + COD collect
-- [ ] Masked call + chat
-- [ ] Earnings + incentives
-- [ ] Trip history, ratings, floating cash deposit
-- [ ] SOS button
-- [ ] Simulated rider auto-accept
+- [x] Onboarding with documents
+- [x] Online/offline + live location
+- [x] Incoming request with 30s countdown
+- [x] Active delivery flow + Google Maps link + OTP + COD collect
+- [ ] Masked call + chat (masked call done; chat in Phase 7)
+- [x] Earnings + incentives
+- [x] Trip history, ratings, floating cash deposit
+- [x] SOS button
+- [x] Simulated rider auto-accept
 
 ## 6. Admin
 - [ ] Overview dashboard with live map + charts

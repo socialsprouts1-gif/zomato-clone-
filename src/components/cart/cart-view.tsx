@@ -55,6 +55,7 @@ export function CartView() {
   const { pay, ui: paymentUi } = usePayment();
   const [placing, startPlacing] = useTransition();
   const [editing, setEditing] = useState<{ line: CartLine; item: MenuItem } | null>(null);
+  const [placedId, setPlacedId] = useState<string | null>(null);
 
   const ctx = useQuery({ queryKey: ["checkout-context"], queryFn: () => getCheckoutContext(), enabled: hydrated });
   const addresses = useMemo(() => (ctx.data?.loggedIn ? ctx.data.addresses : []), [ctx.data]);
@@ -105,6 +106,12 @@ export function CartView() {
   }, [couponMsg, co]);
 
   if (!hydrated) return <Skeleton className="mx-auto h-96 max-w-4xl" />;
+  if (placedId)
+    return (
+      <div className="flex flex-col items-center gap-3 py-20 text-muted-foreground" role="status">
+        <Loader2 className="size-8 animate-spin text-primary" /> Taking you to your order…
+      </div>
+    );
   if (!cart.lines.length || !cart.restaurant)
     return (
       <EmptyState
@@ -150,9 +157,10 @@ export function CartView() {
           return;
         }
       }
+      setPlacedId(res.orderId);
+      router.push(`/orders/${res.orderId}?placed=1`);
       cart.clear();
       co.resetForNewOrder();
-      router.push(`/orders/${res.orderId}?placed=1`);
     });
   }
 

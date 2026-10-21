@@ -107,7 +107,7 @@ test("auto-accept moves new orders straight into preparing", async ({ page, brow
   await loginAs(customer, "customer");
   const id = await placeCodOrder(customer);
   await expect.poll(() => status(id)).toMatch(/PREPARING|READY|RIDER_ASSIGNED/);
-  const ev = await query<{ note: string | null }>(`select note from order_events where order_id = $1 and to_status = 'ACCEPTED'`, [id]);
+  const ev = await query<{ note: string | null }>(`select note from order_events where order_id = $1 and to_status = 'ACCEPTED' and from_status = 'PLACED'`, [id]);
   expect(ev[0]?.note).toBe("Auto-accepted");
   await page.getByRole("switch", { name: "Auto-accept orders" }).click();
   await customerCtx.close();

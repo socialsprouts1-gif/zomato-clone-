@@ -1,24 +1,39 @@
-import { Bike, Power } from "lucide-react";
+import { Hourglass } from "lucide-react";
+import { redirect } from "next/navigation";
+import { RiderHome } from "@/components/rider/rider-home";
 import { EmptyState } from "@/components/shared/empty-state";
 import { PageHeader } from "@/components/shared/page-header";
-import { Card, CardContent } from "@/components/ui/card";
+import { requireRole } from "@/lib/auth/session";
+import { isDemoMode } from "@/lib/env";
+import { loadRiderHome } from "@/lib/rider/data";
 
-export default function RiderHomePage() {
+export default async function RiderHomePage() {
+  const user = await requireRole(["rider", "admin"], "/rider");
+  const data = await loadRiderHome(user.id);
+  if (!data.rider && user.profile.role === "admin")
+    return (
+      <>
+        <PageHeader title="Rider app" />
+        <EmptyState icon={Hourglass} title="You're signed in as an admin" description="Use the Demo Switcher to sign in as a rider and see the delivery flow." />
+      </>
+    );
+  if (!data.rider) redirect("/rider/onboarding");
+  if (data.rider.status !== "approved") {
+    return (
+      <>
+        <PageHeader title={`Hi ${data.rider.name.split(" ")[0]}`} />
+        <EmptyState
+          icon={Hourglass}
+          title={data.rider.status === "pending" ? "Your application is under review" : `Your account is ${data.rider.status}`}
+          description={data.rider.status === "pending" ? "We're checking your documents. You'll be notified when you can start delivering." : "Please contact support."}
+        />
+      </>
+    );
+  }
   return (
     <>
-      <PageHeader title="Ready to ride?" description="Go online to start receiving delivery requests nearby." />
-      <Card className="mb-6">
-        <CardContent className="flex items-center gap-4 p-5">
-          <span className="flex size-12 items-center justify-center rounded-full bg-muted text-muted-foreground">
-            <Power className="size-6" aria-hidden />
-          </span>
-          <div>
-            <p className="font-semibold">You&apos;re offline</p>
-            <p className="text-sm text-muted-foreground">The online toggle and live location go live in Phase 6.</p>
-          </div>
-        </CardContent>
-      </Card>
-      <EmptyState icon={Bike} title="No active delivery" description="New order requests appear here with a 30-second timer." />
+      <PageHeader title={`Ready to ride, ${data.rider.name.split(" ")[0]}?`} description={`${data.rider.vehicle_type.replace("_", " ")} · ${data.rider.vehicle_number ?? ""} · ★ ${data.rider.rating}`} />
+      <RiderHome data={data} demoMode={isDemoMode} />
     </>
   );
 }

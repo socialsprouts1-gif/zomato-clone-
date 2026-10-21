@@ -21,7 +21,7 @@ const DB_URL = process.env.DB_URL;
 const STORAGE_DIR = process.env.STORAGE_DIR ?? path.resolve(".dev-storage");
 if (!JWT_SECRET || !DB_URL) throw new Error("JWT_SECRET and DB_URL are required");
 
-const pool = new pg.Pool({ connectionString: DB_URL, max: 8 });
+const pool = new pg.Pool({ connectionString: DB_URL, max: 16 });
 
 // ---------- helpers ----------
 function b64urlDecode(s) {
@@ -225,12 +225,16 @@ async function listen() {
   const client = new pg.Client({ connectionString: DB_URL });
   await client.connect();
   await client.query("listen dev_realtime");
+  // Process changes one at a time, in commit order, so bursts can't starve the pool or reorder events.
+  let queue = Promise.resolve();
   client.on("notification", (msg) => {
+    let change;
     try {
-      dispatch(JSON.parse(msg.payload)).catch((e) => console.error("dispatch", e));
+      change = JSON.parse(msg.payload);
     } catch (e) {
-      console.error("bad notify payload", e);
+      return console.error("bad notify payload", e);
     }
+    queue = queue.then(() => dispatch(change)).catch((e) => console.error("dispatch", e));
   });
   client.on("error", (e) => {
     console.error("listener error, reconnecting", e.message);

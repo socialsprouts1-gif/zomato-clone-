@@ -3,7 +3,9 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { BillBreakdown } from "@/components/orders/bill-breakdown";
+import { OrderTracker } from "@/components/orders/order-tracker";
 import { PlacedOverlay } from "@/components/orders/placed-overlay";
+import { isCancellableByCustomer } from "@/lib/orders/state-machine";
 import { Suspense } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -22,7 +24,7 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
   const supabase = await getSupabaseServerClient();
   const { data: order } = await supabase
     .from("orders")
-    .select("*, restaurants(name, locality, slug), order_items(*), order_events(to_status, created_at, note)")
+    .select("*, restaurants(name, locality, slug, lat, lng, phone), riders!orders_rider_id_fkey(name, photo_url, vehicle_type, vehicle_number, rating, current_lat, current_lng), order_items(*), order_events(from_status, to_status, created_at, note)")
     .eq("id", id)
     .maybeSingle();
   if (!order) notFound();
@@ -44,6 +46,16 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
         </div>
         <Badge variant={meta.tone === "bad" ? "destructive" : meta.tone === "done" ? "success" : "default"}>{meta.label}</Badge>
       </div>
+
+      <OrderTracker
+        cancellable={isCancellableByCustomer(order.status)}
+        order={{
+          ...order,
+          delivery_address: order.delivery_address as { lat: number; lng: number; label?: string; line1?: string },
+          restaurant: { name: order.restaurants?.name ?? "", lat: order.restaurants?.lat ?? 0, lng: order.restaurants?.lng ?? 0, phone: order.restaurants?.phone ?? null },
+          rider: order.riders ? { ...order.riders, rating: Number(order.riders.rating) } : null,
+        }}
+      />
 
       <Card>
         <CardHeader className="flex-row items-center gap-3">
@@ -113,7 +125,7 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
           </Card>
           <Card>
             <CardHeader className="pb-2">
-              <CardTitle className="text-base">Timeline</CardTitle>
+              <CardTitle className="text-base">Activity log</CardTitle>
             </CardHeader>
             <CardContent>
               <ol className="space-y-3">
@@ -124,10 +136,10 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
                     <li key={`${e.to_status}-${e.created_at}`} className="flex gap-3 text-sm">
                       <Icon className={`mt-0.5 size-4 shrink-0 ${bad ? "text-destructive" : "text-success"}`} />
                       <div>
-                        <p className="font-medium">{statusMeta[e.to_status].label}</p>
+                        <p className="font-medium">{e.from_status === e.to_status && e.note ? e.note.split(":")[0] : statusMeta[e.to_status].label}</p>
                         <p className="text-xs text-muted-foreground">
                           {new Date(e.created_at).toLocaleTimeString("en-IN", { hour: "numeric", minute: "2-digit" })}
-                          {e.note ? ` · ${e.note}` : ""}
+                          {e.note && e.from_status !== e.to_status ? ` · ${e.note}` : e.note?.includes(":") ? ` · ${e.note.split(":")[1]?.trim()}` : ""}
                         </p>
                       </div>
                     </li>
