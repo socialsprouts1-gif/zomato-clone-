@@ -14,7 +14,8 @@
     "seed": "tsx --env-file=.env.local scripts/seed/apply.ts",
     "dev:stack": "scripts/dev-stack/start.sh",
     "test:rls": "tsx --env-file=.env.local scripts/rls-test.ts",
-    "db:types": "tsx --env-file=.env.local scripts/gen-db-types.ts"
+    "db:types": "tsx --env-file=.env.local scripts/gen-db-types.ts",
+    "dev:migrate": "scripts/dev-stack/migrate.sh"
   },
   "dependencies": {
     "@hookform/resolvers": "^6.0.0",
@@ -40,6 +41,7 @@
     "lucide-react": "^1.61.0",
     "next": "15.5.28",
     "next-themes": "^0.4.6",
+    "pdf-lib": "^1.17.1",
     "react": "19.1.0",
     "react-dom": "19.1.0",
     "react-hook-form": "^7.90.0",

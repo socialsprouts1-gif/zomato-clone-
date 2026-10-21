@@ -1585,6 +1585,7 @@ export type Database = {
           is_veg: boolean;
           added_by_name: string | null;
           created_at: string;
+          variant_id: string | null;
         };
         Insert: {
           id?: string;
@@ -1599,6 +1600,7 @@ export type Database = {
           is_veg?: boolean;
           added_by_name?: string | null;
           created_at?: string;
+          variant_id?: string | null;
         };
         Update: {
           id?: string;
@@ -1613,6 +1615,7 @@ export type Database = {
           is_veg?: boolean;
           added_by_name?: string | null;
           created_at?: string;
+          variant_id?: string | null;
         };
         Relationships: [
           {
@@ -1627,6 +1630,13 @@ export type Database = {
             columns: ["order_id"];
             isOneToOne: false;
             referencedRelation: "orders";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "order_items_variant_id_fkey";
+            columns: ["variant_id"];
+            isOneToOne: false;
+            referencedRelation: "item_variants";
             referencedColumns: ["id"];
           },
         ];

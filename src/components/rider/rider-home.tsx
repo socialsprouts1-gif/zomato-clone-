@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useRef, useState, useTransition } from "react";
 import { toast } from "sonner";
+import { ChatButton } from "@/components/chat/chat-sheet";
 import { Map } from "@/components/maps/map";
 import { DemoBadge } from "@/components/shared/demo-badge";
 import { MaskedCallButton } from "@/components/shared/masked-call";
@@ -125,7 +126,7 @@ export function RiderHome({ data, demoMode }: { data: RiderHomeData; demoMode: b
       </Card>
 
       {online && data.offers.length && !data.active ? <OfferCard offer={data.offers[0]!} onDone={refresh} /> : null}
-      {data.active ? <DeliveryFlow order={data.active} simulate={simulate} setSimulate={setSimulate} demoMode={demoMode} onChange={refresh} /> : null}
+      {data.active ? <DeliveryFlow order={data.active} me={rider.id} simulate={simulate} setSimulate={setSimulate} demoMode={demoMode} onChange={refresh} /> : null}
       {online && !data.active && !data.offers.length ? (
         <Card className="flex flex-col items-center gap-2 p-8 text-center">
           <Bike className="size-10 animate-bounce text-primary" />
@@ -229,12 +230,14 @@ function OfferCard({ offer, onDone }: { offer: RiderHomeData["offers"][number]; 
 
 function DeliveryFlow({
   order,
+  me,
   simulate,
   setSimulate,
   demoMode,
   onChange,
 }: {
   order: NonNullable<RiderHomeData["active"]>;
+  me: string;
   simulate: boolean;
   setSimulate: (v: boolean) => void;
   demoMode: boolean;
@@ -325,7 +328,10 @@ function DeliveryFlow({
               <p className="text-sm text-muted-foreground">{r.address}</p>
               <p className={cn("text-sm font-semibold", foodReady ? "text-success" : "text-amber-600")}>{foodReady ? "Food is ready for pickup" : "Food is being prepared"}</p>
             </div>
-            <MaskedCallButton who={r.name} />
+            <div className="flex flex-col gap-1.5">
+              <MaskedCallButton who={r.name} />
+              <ChatButton orderId={order.id} thread="rider_restaurant" as="rider" myId={me} title={`Chat with ${r.name}`} />
+            </div>
           </div>
           {!atRestaurant ? (
             <Button className="w-full" size="lg" disabled={pending} onClick={() => run(() => reachedRestaurant(order.id), "Marked as reached")}>
@@ -363,7 +369,10 @@ function DeliveryFlow({
                 </p>
               ) : null}
             </div>
-            {!instr.avoidCalling ? <MaskedCallButton who={order.customer_name ?? "customer"} /> : null}
+            <div className="flex flex-col gap-1.5">
+              {!instr.avoidCalling ? <MaskedCallButton who={order.customer_name ?? "customer"} /> : null}
+              <ChatButton orderId={order.id} thread="customer_rider" as="rider" myId={me} title={`Chat with ${order.customer_name ?? "customer"}`} />
+            </div>
           </div>
           {order.status === "PICKED_UP" ? (
             <Button className="w-full" size="lg" disabled={pending} onClick={() => run(() => startDelivery(order.id), "On the way to the customer")}>

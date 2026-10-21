@@ -1,10 +1,12 @@
-import { CheckCircle2, Circle, MapPin, Receipt, Store, XCircle } from "lucide-react";
+import { CheckCircle2, Circle, Download, MapPin, Receipt, Star, Store, Undo2, XCircle } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { BillBreakdown } from "@/components/orders/bill-breakdown";
 import { OrderTracker } from "@/components/orders/order-tracker";
 import { PlacedOverlay } from "@/components/orders/placed-overlay";
+import { ReorderButton } from "@/components/orders/reorder-button";
+import { Button } from "@/components/ui/button";
 import { isCancellableByCustomer } from "@/lib/orders/state-machine";
 import { Suspense } from "react";
 import { Badge } from "@/components/ui/badge";
@@ -20,11 +22,11 @@ const methodLabel: Record<string, string> = { razorpay: "Paid online", cod: "Cas
 
 export default async function OrderDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  await requireUser(`/orders/${id}`);
+  const user = await requireUser(`/orders/${id}`);
   const supabase = await getSupabaseServerClient();
   const { data: order } = await supabase
     .from("orders")
-    .select("*, restaurants(name, locality, slug, lat, lng, phone), riders!orders_rider_id_fkey(name, photo_url, vehicle_type, vehicle_number, rating, current_lat, current_lng), order_items(*), order_events(from_status, to_status, created_at, note)")
+    .select("*, restaurants(name, locality, slug, lat, lng, phone), riders!orders_rider_id_fkey(name, photo_url, vehicle_type, vehicle_number, rating, current_lat, current_lng), reviews(food_rating, delivery_rating, comment), order_items(*), order_events(from_status, to_status, created_at, note)")
     .eq("id", id)
     .maybeSingle();
   if (!order) notFound();
@@ -47,7 +49,56 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
         <Badge variant={meta.tone === "bad" ? "destructive" : meta.tone === "done" ? "success" : "default"}>{meta.label}</Badge>
       </div>
 
+      {order.status === "DELIVERED" ? (
+        <Card className="space-y-3 p-5" data-testid="post-delivery">
+          {order.reviews ? (
+            <p className="flex items-center gap-2 text-sm">
+              <Star className="size-4 fill-amber-400 text-amber-400" /> You rated the food {order.reviews.food_rating}★
+              {order.reviews.delivery_rating ? ` and the delivery ${order.reviews.delivery_rating}★` : ""}. Thanks!
+            </p>
+          ) : (
+            <div className="flex items-center justify-between gap-3">
+              <p className="font-semibold">How was your order?</p>
+              <Button asChild>
+                <Link href={`/orders/${order.id}/rate`}>
+                  <Star /> Rate order
+                </Link>
+              </Button>
+            </div>
+          )}
+          <div className="flex flex-wrap gap-2">
+            <ReorderButton orderId={order.id} variant="outline" />
+            <Button asChild variant="outline">
+              <a href={`/orders/${order.id}/invoice`} download>
+                <Download /> Download invoice
+              </a>
+            </Button>
+          </div>
+        </Card>
+      ) : null}
+
+      {["REJECTED", "CANCELLED", "CANCELLED_BY_CUSTOMER", "FAILED_PAYMENT"].includes(order.status) ? (
+        <Card className="space-y-2 p-5" data-testid="refund-status">
+          <p className="flex items-center gap-2 font-semibold">
+            <Undo2 className="size-4 text-primary" /> Refund status
+          </p>
+          {order.refund_paise > 0 ? (
+            <p className="text-sm">
+              {formatPaise(order.refund_paise)} refunded to your {order.refund_to === "original" ? "original payment method (3–5 working days)" : "Thaali wallet"} on{" "}
+              {new Date(order.refunded_at ?? order.updated_at).toLocaleString("en-IN", { dateStyle: "medium", timeStyle: "short" })}.
+            </p>
+          ) : order.status === "FAILED_PAYMENT" ? (
+            <p className="text-sm text-muted-foreground">The payment didn&apos;t go through, so nothing was charged.</p>
+          ) : order.status === "CANCELLED_BY_CUSTOMER" && order.accepted_at ? (
+            <p className="text-sm text-muted-foreground">No refund: the restaurant had already started cooking. The food was offered nearby through Food Rescue.</p>
+          ) : (
+            <p className="text-sm text-muted-foreground">Nothing was paid online for this order, so there&apos;s nothing to refund.</p>
+          )}
+        </Card>
+      ) : null}
+
       <OrderTracker
+        me={user.id}
         cancellable={isCancellableByCustomer(order.status)}
         order={{
           ...order,

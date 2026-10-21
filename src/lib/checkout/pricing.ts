@@ -135,6 +135,7 @@ export async function computeQuote(rawInput: QuoteInput, userId: string | null):
     if (cat && !isCategoryAvailable(cat, when)) errors.push(`${it.name} isn't available at this time.`);
     let base = it.price_paise;
     let variantName: string | null = null;
+    let variantId: string | null = null;
     if (it.item_variants.length) {
       const v = it.item_variants.find((x) => x.id === l.variantId);
       if (!v) errors.push(`Choose an option for ${it.name}.`);
@@ -142,6 +143,7 @@ export async function computeQuote(rawInput: QuoteInput, userId: string | null):
       if (v) {
         base = v.price_paise;
         variantName = v.name;
+        variantId = v.id;
       }
     }
     const allAddons = it.addon_groups.flatMap((g) => g.addons.map((a) => ({ ...a, groupId: g.id })));
@@ -154,7 +156,7 @@ export async function computeQuote(rawInput: QuoteInput, userId: string | null):
     if (chosen.some((a) => !a.in_stock)) errors.push(`An add-on for ${it.name} is out of stock.`);
     const unit = base + chosen.reduce((s, a) => s + a.price_paise, 0);
     lines.push({
-      itemId: it.id, name: it.name, isVeg: it.is_veg, variantName, addons: chosen.map((a) => ({ name: a.name, price_paise: a.price_paise })),
+      itemId: it.id, name: it.name, isVeg: it.is_veg, variantId, variantName, addons: chosen.map((a) => ({ id: a.id, name: a.name, price_paise: a.price_paise })),
       qty: l.qty, unitPaise: unit, totalPaise: unit * l.qty, addedByName: l.addedByName,
     });
   }
@@ -226,7 +228,7 @@ export async function computeQuote(rawInput: QuoteInput, userId: string | null):
       } else if (e.freeItemId) {
         const { data: fi } = await db.from("menu_items").select("id, name, is_veg, price_paise").eq("id", e.freeItemId).single();
         if (fi) {
-          lines.push({ itemId: fi.id, name: fi.name, isVeg: fi.is_veg, variantName: null, addons: [], qty: 1, unitPaise: 0, totalPaise: 0, free: true });
+          lines.push({ itemId: fi.id, name: fi.name, isVeg: fi.is_veg, variantId: null, variantName: null, addons: [], qty: 1, unitPaise: 0, totalPaise: 0, free: true });
           couponState.message = `${fi.name} added free (worth ₹${Math.round(fi.price_paise / 100)})`;
         }
       } else {

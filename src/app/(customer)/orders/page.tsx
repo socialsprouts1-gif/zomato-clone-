@@ -8,6 +8,8 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { requireUser } from "@/lib/auth/session";
+import { HideOrderButton } from "@/components/orders/hide-order-button";
+import { ReorderButton } from "@/components/orders/reorder-button";
 import { statusMeta } from "@/lib/orders/status";
 import { getSupabaseServerClient } from "@/lib/supabase/server";
 import { cn, formatPaise } from "@/lib/utils";
@@ -54,12 +56,10 @@ export default async function OrdersPage() {
             const meta = statusMeta[o.status];
             return (
               <li key={o.id}>
-                <Link href={`/orders/${o.id}`} className="block rounded-2xl focus-visible:ring-2 focus-visible:ring-ring">
-                  <Card className="flex gap-4 p-4 transition hover:border-primary/50">
+                <Card className="p-4 transition hover:border-primary/50">
+                  <Link href={`/orders/${o.id}`} className="flex gap-4 rounded-xl focus-visible:ring-2 focus-visible:ring-ring">
                     <div className="relative size-16 shrink-0 overflow-hidden rounded-xl bg-secondary">
-                      {o.restaurants?.cover_image_url ? (
-                        <Image src={o.restaurants.cover_image_url} alt="" fill sizes="64px" className="object-cover" />
-                      ) : null}
+                      {o.restaurants?.cover_image_url ? <Image src={o.restaurants.cover_image_url} alt="" fill sizes="64px" className="object-cover" /> : null}
                     </div>
                     <div className="min-w-0 flex-1">
                       <div className="flex items-start justify-between gap-2">
@@ -69,9 +69,7 @@ export default async function OrdersPage() {
                         </div>
                         <Badge className={cn("shrink-0", toneClass[meta.tone])}>{meta.label}</Badge>
                       </div>
-                      <p className="mt-2 line-clamp-1 text-sm text-muted-foreground">
-                        {o.order_items.map((i) => `${i.quantity} × ${i.name}`).join(", ")}
-                      </p>
+                      <p className="mt-2 line-clamp-1 text-sm text-muted-foreground">{o.order_items.map((i) => `${i.quantity} × ${i.name}`).join(", ")}</p>
                       <p className="mt-1 flex items-center justify-between text-xs text-muted-foreground">
                         <span>
                           #{o.order_number} · {new Date(o.created_at).toLocaleString("en-IN", { day: "numeric", month: "short", hour: "numeric", minute: "2-digit" })}
@@ -81,8 +79,14 @@ export default async function OrdersPage() {
                         </span>
                       </p>
                     </div>
-                  </Card>
-                </Link>
+                  </Link>
+                  {meta.tone === "done" || meta.tone === "bad" ? (
+                    <div className="mt-3 flex gap-2 border-t pt-3">
+                      {o.status === "DELIVERED" ? <ReorderButton orderId={o.id} size="sm" variant="outline" /> : null}
+                      <HideOrderButton orderId={o.id} />
+                    </div>
+                  ) : null}
+                </Card>
               </li>
             );
           })}

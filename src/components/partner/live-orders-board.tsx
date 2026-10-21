@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useCallback, useEffect, useMemo, useRef, useState, useTransition } from "react";
 import { toast } from "sonner";
 import { VegDot } from "@/components/catalog/badges";
+import { ChatButton } from "@/components/chat/chat-sheet";
 import { EmptyState } from "@/components/shared/empty-state";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -42,7 +43,7 @@ function useTick(ms = 30000) {
   }, [ms]);
 }
 
-export function LiveOrdersBoard({ restaurantId, restaurantName, initial }: { restaurantId: string; restaurantName: string; initial: LiveOrder[] }) {
+export function LiveOrdersBoard({ restaurantId, restaurantName, initial, me }: { restaurantId: string; restaurantName: string; initial: LiveOrder[]; me: string }) {
   const [orders, setOrders] = useState(initial);
   const [tab, setTab] = useState<Tab>("new");
   const [rejecting, setRejecting] = useState<LiveOrder | null>(null);
@@ -220,6 +221,12 @@ export function LiveOrdersBoard({ restaurantId, restaurantName, initial }: { res
                     <Button size="sm" disabled={busyId === o.id} onClick={() => act(o.id, () => partnerHandOver(o.id), `#${o.order_number} handed over`)}>
                       <Bike /> Handed over to rider
                     </Button>
+                  ) : null}
+                  {!TAB_STATUSES.past.includes(o.status) ? (
+                    <ChatButton orderId={o.id} thread="customer_restaurant" as="restaurant" myId={me} title={`Chat with ${o.customer_name ?? "customer"}`} label="Customer" variant="ghost" />
+                  ) : null}
+                  {o.riders && !TAB_STATUSES.past.includes(o.status) ? (
+                    <ChatButton orderId={o.id} thread="rider_restaurant" as="restaurant" myId={me} title={`Chat with ${o.riders.name}`} label="Rider" variant="ghost" />
                   ) : null}
                   <Button asChild size="sm" variant="ghost">
                     <Link href={`/partner/orders/${o.id}/kot`} target="_blank">

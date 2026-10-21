@@ -27,8 +27,9 @@ export type PricedLine = {
   itemId: string;
   name: string;
   isVeg: boolean;
+  variantId: string | null;
   variantName: string | null;
-  addons: { name: string; price_paise: number }[];
+  addons: { id: string; name: string; price_paise: number }[];
   qty: number;
   unitPaise: number;
   totalPaise: number;

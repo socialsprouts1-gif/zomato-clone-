@@ -1,6 +1,8 @@
 "use client";
 
-import { Bike, CheckCircle2, ChefHat, Circle, Clock, KeyRound, Loader2, MapPin, Package, Star, Store, XCircle } from "lucide-react";
+import { Bike, CheckCircle2, ChefHat, Circle, Clock, KeyRound, LifeBuoy, Loader2, MapPin, Package, Star, Store, XCircle } from "lucide-react";
+import Link from "next/link";
+import { ChatButton } from "@/components/chat/chat-sheet";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useState, useTransition } from "react";
 import { toast } from "sonner";
@@ -51,7 +53,7 @@ export type TrackerOrder = {
 const ACTIVE: OrderStatus[] = ["PLACED", "ACCEPTED", "PREPARING", "READY", "RIDER_ASSIGNED", "PICKED_UP", "OUT_FOR_DELIVERY"];
 const fmt = (iso: string | null) => (iso ? new Date(iso).toLocaleTimeString("en-IN", { hour: "numeric", minute: "2-digit" }) : null);
 
-export function OrderTracker({ order, cancellable }: { order: TrackerOrder; cancellable: boolean }) {
+export function OrderTracker({ order, cancellable, me }: { order: TrackerOrder; cancellable: boolean; me: string }) {
   const router = useRouter();
   const [riderPos, setRiderPos] = useState<{ lat: number; lng: number; heading?: number } | null>(
     order.rider?.current_lat ? { lat: order.rider.current_lat, lng: order.rider.current_lng! } : null,
@@ -162,7 +164,10 @@ export function OrderTracker({ order, cancellable }: { order: TrackerOrder; canc
               </span>
             </p>
           </div>
-          <MaskedCallButton who={order.rider.name} />
+          <div className="flex flex-col gap-1.5 sm:flex-row">
+            <ChatButton orderId={order.id} thread="customer_rider" as="customer" myId={me} title={`Chat with ${order.rider.name}`} />
+            <MaskedCallButton who={order.rider.name} />
+          </div>
         </Card>
       ) : null}
 
@@ -199,8 +204,14 @@ export function OrderTracker({ order, cancellable }: { order: TrackerOrder; canc
       </Card>
 
       <div className="flex flex-wrap gap-2">
+        {active ? <ChatButton orderId={order.id} thread="customer_restaurant" as="customer" myId={me} title={`Chat with ${order.restaurant.name}`} label="Message restaurant" /> : null}
+        <Button asChild variant="outline" size="sm">
+          <Link href={`/help?order=${order.id}`}>
+            <LifeBuoy /> Help with this order
+          </Link>
+        </Button>
         {cancellable ? (
-          <Button variant="outline" className="text-destructive" onClick={() => setCancelOpen(true)}>
+          <Button variant="outline" size="sm" className="text-destructive" onClick={() => setCancelOpen(true)}>
             <XCircle /> Cancel order
           </Button>
         ) : null}

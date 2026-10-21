@@ -1,4 +1,4 @@
-import { ChevronRight, Crown, LogOut, MapPin, Settings, ShoppingBag, UserRound, type LucideIcon } from "lucide-react";
+import { Bell, ChevronRight, Crown, LifeBuoy, LogOut, MapPin, Settings, ShoppingBag, UserRound, type LucideIcon } from "lucide-react";
 import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
@@ -29,6 +29,8 @@ export default async function AccountPage() {
     { href: "/account/profile", key: "account.profile", icon: UserRound },
     { href: "/orders", key: "orders.title", icon: ShoppingBag, hint: orderCount ? `${orderCount}` : undefined },
     { href: "/account/addresses", key: "account.addresses", icon: MapPin },
+    { href: "/notifications", key: "account.notifications", icon: Bell },
+    { href: "/help", key: "account.help", icon: LifeBuoy },
     { href: "/account/settings", key: "account.settings", icon: Settings },
   ];
 

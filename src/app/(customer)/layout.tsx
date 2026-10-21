@@ -4,6 +4,7 @@ import { CartBar } from "@/components/cart/cart-bar";
 import { BottomTabBar } from "@/components/layout/bottom-tab-bar";
 import { TopNav } from "@/components/layout/top-nav";
 import { LocationButton } from "@/components/location/location-button";
+import { NotificationBell } from "@/components/notifications/notification-bell";
 import { Logo } from "@/components/shared/logo";
 import { getSessionUser } from "@/lib/auth/session";
 import { getPreferences } from "@/lib/preferences";
@@ -42,6 +43,7 @@ export default async function CustomerLayout({ children }: { children: React.Rea
           />
           <div className="ml-auto flex items-center gap-2">
             <TopNav app="customer" />
+            {user ? <NotificationBell userId={user.id} pushEnabled={Boolean((user.profile.notification_prefs as { push?: boolean } | null)?.push)} /> : null}
             {user ? (
               <Link
                 href="/account"

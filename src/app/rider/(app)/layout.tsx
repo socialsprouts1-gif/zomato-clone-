@@ -1,6 +1,7 @@
 import { BottomTabBar } from "@/components/layout/bottom-tab-bar";
 import { TopNav } from "@/components/layout/top-nav";
 import { UserMenu } from "@/components/layout/user-menu";
+import { NotificationBell } from "@/components/notifications/notification-bell";
 import { Logo } from "@/components/shared/logo";
 import { requireRole } from "@/lib/auth/session";
 
@@ -13,6 +14,7 @@ export default async function RiderAppLayout({ children }: { children: React.Rea
           <Logo href="/rider" suffix="Rider" />
           <div className="ml-auto flex items-center gap-2">
             <TopNav app="rider" />
+            <NotificationBell userId={user.id} href="/rider/notifications" />
             <UserMenu name={user.profile.name ?? "Rider"} detail={user.email ?? undefined} />
           </div>
         </div>

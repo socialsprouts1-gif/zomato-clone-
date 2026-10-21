@@ -21,7 +21,7 @@ Ticked only when verified working (tests or manual check).
 - [x] Profile (name, email, phone, avatar, dietary preference)
 - [x] Saved addresses with map pin, flat/landmark, instructions
 - [ ] Settings: notifications, dark mode, language, delete account
-- [ ] Order history with hide/delete
+- [x] Order history with hide/delete
 
 ## 3.2 Home & discovery
 - [x] Location header
@@ -71,16 +71,16 @@ Ticked only when verified working (tests or manual check).
 ## 3.6 Live tracking
 - [x] Status timeline
 - [x] Live map with moving rider + ETA
-- [ ] Rider card, masked call, chat (card + masked call done; chat in Phase 7)
+- [x] Rider card, masked call, chat
 - [x] Delivery OTP
 - [x] Cancel rules (refund / Food Rescue)
-- [ ] Help chat from tracking
+- [x] Help chat from tracking
 
 ## 3.7 Post-order
-- [ ] Rate food and delivery separately
-- [ ] Order details + PDF invoice
-- [ ] Reorder
-- [ ] Refund status
+- [x] Rate food and delivery separately
+- [x] Order details + PDF invoice
+- [x] Reorder
+- [x] Refund status
 
 ## 3.8 Dining Out
 - [ ] Dine-in listing with filters
@@ -98,8 +98,8 @@ Ticked only when verified working (tests or manual check).
 - [ ] Wallet: balance, add money, history, refunds
 - [ ] Referral codes + credits
 - [ ] Favourites + custom shareable collections
-- [ ] Notifications center + browser push
-- [ ] Help center: FAQ, tickets, support chat
+- [x] Notifications center + browser push (in-app + service-worker system notifications; no third-party push service)
+- [x] Help center: FAQ, tickets, support chat
 - [x] Donation round-up at checkout
 
 ## 3.12 Live / Events
@@ -126,7 +126,7 @@ Ticked only when verified working (tests or manual check).
 - [x] Online/offline + live location
 - [x] Incoming request with 30s countdown
 - [x] Active delivery flow + Google Maps link + OTP + COD collect
-- [ ] Masked call + chat (masked call done; chat in Phase 7)
+- [x] Masked call + chat
 - [x] Earnings + incentives
 - [x] Trip history, ratings, floating cash deposit
 - [x] SOS button

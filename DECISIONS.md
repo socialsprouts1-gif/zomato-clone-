@@ -45,3 +45,8 @@ Choices made where the spec was open, per rule 6 in the build prompt.
 | 39 | 6 | Riders confirm pickup by typing the last 4 digits of the order number, and finish by entering the customer's 4-digit delivery OTP. COD orders also require ticking "cash collected", which adds to the rider's floating cash. | Spec's pickup and OTP rules. |
 | 40 | 6 | The tracking screen refreshes on realtime events and also whenever its 2-second tick reports a newer `updated_at`. | A missed realtime event can't leave the customer looking at a stale status. |
 | 41 | 6 | The "rider assigned" entry in the order's activity log keeps the current status (from = to) with a note, instead of a separate status. | Riders can be assigned while food is still being prepared (see #11). |
+| 42 | 7 | Browser "push" uses the service worker's `showNotification` when a realtime notification arrives and the tab is in the background, instead of Web Push with VAPID keys. | No extra keys or push service to configure; works across all four apps. |
+| 43 | 7 | In demo mode, simulated riders and restaurants send a canned reply when the customer chats. | A solo presenter can show two-way chat. |
+| 44 | 7 | The PDF invoice uses pdf-lib's built-in fonts and prints amounts as "Rs." | Standard PDF fonts can't draw ₹; avoids shipping a font file. |
+| 45 | 7 | Reorder rebuilds the cart from today's menu (current prices, skipping unavailable items) using saved variant/add-on ids, falling back to names for older orders. | Prices and stock change; the server reprices at checkout anyway. |
+| 46 | 7 | Placing an order fails (and the half-created order is removed) if its line items can't be saved. | Never leave an order without items. |

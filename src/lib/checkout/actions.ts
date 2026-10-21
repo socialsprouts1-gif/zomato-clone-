@@ -98,11 +98,12 @@ export async function placeOrder(raw: PlaceOrderInput): Promise<PlaceOrderResult
     .single();
   if (error || !order) return { ok: false, error: error?.message ?? "Couldn't create the order" };
 
-  await db.from("order_items").insert(
+  const { error: itemsError } = await db.from("order_items").insert(
     quote.lines.map((l) => ({
       order_id: order.id,
       menu_item_id: l.itemId,
       name: l.free ? `${l.name} (free)` : l.name,
+      variant_id: l.variantId,
       variant_name: l.variantName,
       addons: l.addons,
       quantity: l.qty,
@@ -112,6 +113,10 @@ export async function placeOrder(raw: PlaceOrderInput): Promise<PlaceOrderResult
       added_by_name: l.addedByName ?? null,
     })),
   );
+  if (itemsError) {
+    await db.from("orders").delete().eq("id", order.id);
+    return { ok: false, error: `Couldn't save your items (${itemsError.message}). Please try again.` };
+  }
   await db.from("order_events").insert({ order_id: order.id, from_status: null, to_status: "PENDING_PAYMENT", actor_id: user.id, actor_role: "customer", note: `Checkout · ${method}` });
 
   if (method === "wallet" || method === "cod") {

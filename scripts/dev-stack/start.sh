@@ -54,12 +54,8 @@ curl -sf http://127.0.0.1:9999/health >/dev/null || { cat "$RUN/auth.log"; exit 
 
 if [ "${RESET:-0}" = "1" ]; then
   echo "• applying migrations"
-  for f in "$ROOT"/supabase/migrations/*.sql; do
-    [ -e "$f" ] || continue
-    su postgres -c "psql -v ON_ERROR_STOP=1 -q -d $DB -f '$f'" >/dev/null
-  done
-  su postgres -c "PGOPTIONS=--client-min-messages=warning psql -v ON_ERROR_STOP=1 -q -d $DB -f '$DIR/realtime-triggers.sql'"
 fi
+"$DIR/migrate.sh"
 
 echo "• starting postgrest"
 cat > "$RUN/postgrest.conf" <<CONF

@@ -7,7 +7,7 @@ import { getPartnerContext } from "@/lib/partner/context";
 import { loadLiveOrders } from "@/lib/partner/orders";
 
 export default async function PartnerLiveOrdersPage() {
-  const { current } = await getPartnerContext("/partner");
+  const { current, user } = await getPartnerContext("/partner");
   if (!current) {
     return (
       <>
@@ -28,7 +28,7 @@ export default async function PartnerLiveOrdersPage() {
   return (
     <>
       <PageHeader title="Live orders" description={`${current.name} · ${current.locality}`} actions={<OutletStatusControls outlet={current} />} />
-      <LiveOrdersBoard key={current.id} restaurantId={current.id} restaurantName={current.name} initial={orders} />
+      <LiveOrdersBoard key={current.id} restaurantId={current.id} restaurantName={current.name} initial={orders} me={user.id} />
     </>
   );
 }
