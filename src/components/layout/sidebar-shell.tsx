@@ -83,7 +83,8 @@ export function SidebarShell({
               </nav>
             </SheetContent>
           </Sheet>
-          <div className="lg:hidden">
+          {/* Phones: just the mark, so the header actions fit without horizontal scroll. */}
+          <div className="lg:hidden max-sm:[&_a>span]:sr-only">
             <Logo href={rootHref} suffix={suffix} />
           </div>
           <div className="ml-auto flex items-center gap-2">{headerSlot}</div>

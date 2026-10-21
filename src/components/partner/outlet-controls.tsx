@@ -19,7 +19,7 @@ export function OutletSwitcher({ outlets, current }: { outlets: Outlet[]; curren
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="outline" className="max-w-56 gap-2" disabled={pending} aria-label="Switch outlet">
+        <Button variant="outline" className="max-w-40 gap-2 sm:max-w-56" disabled={pending} aria-label="Switch outlet">
           <Store className="size-4 text-primary" /> <span className="truncate">{current.name}</span>
           {outlets.length > 1 ? <ChevronDown className="size-4" /> : null}
         </Button>

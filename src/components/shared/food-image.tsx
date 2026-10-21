@@ -39,6 +39,8 @@ export function FoodImage({
           fill
           sizes={sizes}
           priority={priority}
+          // Uploads served from a local (http) storage gateway can't go through the image optimizer.
+          unoptimized={src!.startsWith("http://")}
           className="object-cover"
           onError={() => setFailed(true)}
         />
