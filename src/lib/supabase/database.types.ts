@@ -3314,10 +3314,13 @@ export type Database = {
       is_service_context: { Args: Record<PropertyKey, never>; Returns: boolean };
       item_restaurant: { Args: { iid: string }; Returns: string };
       my_restaurant_ids: { Args: Record<PropertyKey, never>; Returns: string[] };
+      popular_items: { Args: { p_restaurant: string; lim?: number }; Returns: { menu_item_id: string; orders: number }[] };
       random_code: { Args: { len: number }; Returns: string };
+      restaurant_order_counts: { Args: { days?: number }; Returns: { restaurant_id: string; orders: number }[] };
       restaurants_near: { Args: { p_lat: number; p_lng: number; radius_km: number }; Returns: { restaurant_id: string; distance_km: number }[] };
       search_dishes: { Args: { q: string; lim?: number }; Returns: Database["public"]["Tables"]["menu_items"]["Row"][] };
       search_restaurants: { Args: { q: string; lim?: number }; Returns: Database["public"]["Tables"]["restaurants"]["Row"][] };
+      trending_searches: { Args: { days?: number; lim?: number }; Returns: { query: string; hits: number }[] };
       wallet_apply: { Args: { p_user: string; p_amount: number; p_type: Database["public"]["Enums"]["wallet_txn_type"]; p_description: string; p_reference?: string }; Returns: number };
     };
     Enums: {

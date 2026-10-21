@@ -26,38 +26,38 @@ Ticked only when verified working (tests or manual check).
 ## 3.2 Home & discovery
 - [x] Location header
 - [ ] Delivery / Dining Out / Live tabs
-- [ ] Admin-managed banner carousel
-- [ ] What's on your mind? cuisine carousel
-- [ ] Filter chips (sort, rating, pure veg, offers, fast, under ₹300, cuisines, new)
-- [ ] Veg Mode (global, persisted)
+- [x] Admin-managed banner carousel
+- [x] What's on your mind? cuisine carousel
+- [x] Filter chips (sort, rating, pure veg, offers, fast, under ₹300, cuisines, new)
+- [x] Veg Mode (global, persisted)
 - [ ] Healthy Mode + Healthy Score
 - [ ] Food Rescue card with countdown
-- [ ] Recommended / Top rated / Trending / Collections sections
-- [ ] Restaurant cards (all badges and states)
-- [ ] Recently viewed strip
+- [x] Recommended / Top rated / Trending / Collections sections
+- [x] Restaurant cards (all badges and states)
+- [x] Recently viewed strip
 
 ## 3.3 Search
-- [ ] Debounced grouped search
-- [ ] Recent + trending searches
-- [ ] Dish-level results with add buttons
-- [ ] Voice search
-- [ ] Typo tolerance (pg_trgm)
+- [x] Debounced grouped search
+- [x] Recent + trending searches
+- [x] Dish-level results with add buttons
+- [x] Voice search
+- [x] Typo tolerance (pg_trgm)
 
 ## 3.4 Restaurant page
-- [ ] Hero gallery + full info
-- [ ] Offers strip
-- [ ] Sticky category nav + Menu button
-- [ ] In-menu search, veg and bestseller filters
-- [ ] Menu item row with stepper
-- [ ] Customisations bottom sheet (variants, add-ons, live price)
-- [ ] Out-of-stock + category time windows
-- [ ] Reviews tab with photos + AI summary
-- [ ] Photos tab, Info tab with map
-- [ ] Favourite + share
-- [ ] Replace cart? dialog
+- [x] Hero gallery + full info
+- [x] Offers strip
+- [x] Sticky category nav + Menu button
+- [x] In-menu search, veg and bestseller filters
+- [x] Menu item row with stepper
+- [x] Customisations bottom sheet (variants, add-ons, live price)
+- [x] Out-of-stock + category time windows
+- [x] Reviews tab with photos + AI summary
+- [x] Photos tab, Info tab with map
+- [x] Favourite + share
+- [x] Replace cart? dialog
 
 ## 3.5 Cart & checkout
-- [ ] Floating View cart bar
+- [x] Floating View cart bar
 - [ ] Cart page: steppers, edit customisation, cooking instructions, no cutlery
 - [ ] Address selector + delivery instructions
 - [ ] Schedule order (2h–2d)

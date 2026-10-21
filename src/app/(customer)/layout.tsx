@@ -1,5 +1,6 @@
 import { UserRound } from "lucide-react";
 import Link from "next/link";
+import { CartBar } from "@/components/cart/cart-bar";
 import { BottomTabBar } from "@/components/layout/bottom-tab-bar";
 import { TopNav } from "@/components/layout/top-nav";
 import { LocationButton } from "@/components/location/location-button";
@@ -60,6 +61,7 @@ export default async function CustomerLayout({ children }: { children: React.Rea
       <main id="main" className="mx-auto w-full max-w-6xl flex-1 px-4 pt-4 pb-28 md:pb-10">
         {children}
       </main>
+      <CartBar />
       <BottomTabBar app="customer" />
     </div>
   );

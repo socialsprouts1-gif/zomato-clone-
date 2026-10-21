@@ -628,6 +628,18 @@ insert("public.restaurant_offers", [
   { id: uid("offer:napoli-bogo"), restaurant_id: napoli.id, title: "Buy 1 Get 1 Margherita", description: "Add two Margheritas, pay for one.", code: "BOGOPIZZA", discount_type: "bogo", discount_value: 0, max_discount_paise: null, min_order_paise: 0, bogo_item_id: margherita.id, free_item_id: null, target: "all", applies_to: "delivery" },
   { id: uid("offer:greenbowl-free"), restaurant_id: greenBowl.id, title: "Free Green Detox Smoothie", description: "On orders above ₹599.", code: "FREESMOOTHIE", discount_type: "free_item", discount_value: 0, max_discount_paise: null, min_order_paise: paise(599), bogo_item_id: null, free_item_id: smoothie.id, target: "all", applies_to: "delivery" },
   { id: uid("offer:bbh-new"), restaurant_id: bbh.id, title: "₹125 off for new customers", description: "Your first order from us.", code: "NEWBBH", discount_type: "flat", discount_value: paise(125), max_discount_paise: null, min_order_paise: paise(399), bogo_item_id: null, free_item_id: null, target: "new_users", applies_to: "delivery" },
+  // A standard delivery offer on roughly half the restaurants, so cards show realistic ribbons.
+  ...approved
+    .filter((r, i) => i % 2 === 0 && ![saffron.id, napoli.id, greenBowl.id, bbh.id].includes(r.id))
+    .map((r, i) => {
+      const pct = [20, 30, 40, 50, 15][i % 5]!;
+      const cap = [80, 100, 120, 75, 150][i % 5]!;
+      return {
+        id: uid(`offer:std:${r.id}`), restaurant_id: r.id, title: `${pct}% OFF up to ₹${cap}`, description: `On orders above ₹${pct >= 40 ? 299 : 199}.`,
+        code: `${r.slug.replace(/-/g, "").slice(0, 8).toUpperCase()}${pct}`, discount_type: "percent" as const, discount_value: pct, max_discount_paise: paise(cap),
+        min_order_paise: paise(pct >= 40 ? 299 : 199), bogo_item_id: null, free_item_id: null, target: "all" as const, applies_to: "delivery" as const,
+      };
+    }),
 ].map((o) => ({ ...o, valid_until: raw("now() + interval '60 days'"), is_active: true })));
 
 insert("public.ad_campaigns", [
@@ -637,7 +649,7 @@ out.push(`update public.restaurants set sponsored_until = now() + interval '24 d
 
 // ---------- banners, collections, gold, events ----------
 insert("public.banners", [
-  { title: "50% off your first order", subtitle: "Use code WELCOME50 · up to ₹100", cta_label: "Order now", link_url: "/search?offers=1", theme: "saffron", image_url: img.biryani[0] },
+  { title: "50% off your first order", subtitle: "Use code WELCOME50 · up to ₹100", cta_label: "Order now", link_url: "/?offers=1", theme: "saffron", image_url: img.biryani[0] },
   { title: "Thaali Gold", subtitle: "Free delivery, extra discounts and more", cta_label: "Join Gold", link_url: "/gold", theme: "gold", image_url: img.restaurant[1] },
   { title: "Healthy, but make it tasty", subtitle: "Bowls with full macros from ₹249", cta_label: "Explore", link_url: "/collections/healthy-and-happy", theme: "green", image_url: img.salad[0] },
   { title: "Book a table this weekend", subtitle: "Flat 20% off at partner restaurants", cta_label: "Dining out", link_url: "/dining", theme: "plum", image_url: img.restaurant[0] },
