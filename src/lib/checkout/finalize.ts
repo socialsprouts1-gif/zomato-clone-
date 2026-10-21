@@ -12,15 +12,14 @@ async function recordPlacement(o: Order) {
   if (o.coupon_id || o.restaurant_offer_id) {
     await db.from("coupon_redemptions").insert({ coupon_id: o.coupon_id, restaurant_offer_id: o.restaurant_offer_id, order_id: o.id, user_id: o.customer_id, discount_paise: o.discount_paise });
     if (o.coupon_id) {
-      const { data: c } = await db.from("coupons").select("used_count").eq("id", o.coupon_id).single();
-      if (c) await db.from("coupons").update({ used_count: c.used_count + 1 }).eq("id", o.coupon_id);
+      await db.rpc("increment_coupon_use", { p_coupon: o.coupon_id });
     }
   }
   const { data: items } = await db.from("order_items").select("menu_item_id, quantity").eq("order_id", o.id);
   for (const it of items ?? []) {
     if (!it.menu_item_id) continue;
-    const { data: m } = await db.from("menu_items").select("stock_qty").eq("id", it.menu_item_id).single();
-    if (m?.stock_qty !== null && m?.stock_qty !== undefined) await db.from("menu_items").update({ stock_qty: Math.max(0, m.stock_qty - it.quantity) }).eq("id", it.menu_item_id);
+    // Untracked items (stock_qty null) are left alone by the function.
+    await db.rpc("adjust_menu_stock", { p_item: it.menu_item_id, p_delta: -it.quantity });
   }
   if (o.donation_paise > 0) await db.from("donations").insert({ user_id: o.customer_id, order_id: o.id, amount_paise: o.donation_paise });
   await db.from("analytics_events").insert({ restaurant_id: o.restaurant_id, user_id: o.customer_id, event: "order_placed" });

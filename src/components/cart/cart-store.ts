@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
+import { logCartStart } from "@/lib/catalog/actions";
 
 export type CartAddon = { id: string; name: string; price: number };
 export type CartLine = {
@@ -41,6 +42,7 @@ export const useCart = create<CartState>()(
       add(restaurant, line, qty = 1) {
         const state = get();
         if (state.restaurant && state.restaurant.id !== restaurant.id && state.lines.length) return "conflict";
+        if (!state.lines.length) void logCartStart(restaurant.id).catch(() => undefined);
         const key = lineKey(line);
         const existing = state.lines.find((l) => l.key === key);
         set({
@@ -52,6 +54,7 @@ export const useCart = create<CartState>()(
         return "added";
       },
       replaceWith(restaurant, line, qty = 1) {
+        void logCartStart(restaurant.id).catch(() => undefined);
         set({ restaurant, lines: [{ ...line, key: lineKey(line), qty }] });
       },
       setQty(key, qty) {

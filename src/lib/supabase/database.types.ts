@@ -3329,6 +3329,7 @@ export type Database = {
       generate_restaurant_payout: { Args: { rid: string; p_start: unknown; p_end: unknown }; Returns: Database["public"]["Tables"]["payouts"]["Row"] };
       has_active_order_with_rider: { Args: { rid: string }; Returns: boolean };
       haversine_km: { Args: { lat1: number; lng1: number; lat2: number; lng2: number }; Returns: number };
+      increment_coupon_use: { Args: { p_coupon: string }; Returns: undefined };
       is_admin: { Args: Record<PropertyKey, never>; Returns: boolean };
       is_cart_member: { Args: { cid: string }; Returns: boolean };
       is_restaurant_member: { Args: { rid: string }; Returns: boolean };

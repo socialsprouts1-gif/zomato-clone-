@@ -47,6 +47,8 @@ export async function placeOrder(raw: PlaceOrderInput): Promise<PlaceOrderResult
   }
 
   const db = getSupabaseAdminClient();
+  // Funnel event for partner reports; logged on every attempt, so checkouts >= orders.
+  await db.from("analytics_events").insert({ restaurant_id: input.restaurantId, user_id: user.id, event: "checkout_start" });
   const { data: address } = await db.from("addresses").select("*").eq("id", input.addressId).single();
   if (!address || address.user_id !== user.id) return { ok: false, error: "Choose a delivery address." };
 

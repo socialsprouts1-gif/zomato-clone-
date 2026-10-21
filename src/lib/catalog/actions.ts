@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { z } from "zod";
 import { getSessionUser } from "@/lib/auth/session";
 import { getSupabaseServerClient } from "@/lib/supabase/server";
 
@@ -53,4 +54,13 @@ export async function getMenuItemForEdit(itemId: string) {
   const supabase = await getSupabaseServerClient();
   const { data } = await supabase.from("menu_items").select(ITEM_COLUMNS).eq("id", itemId).maybeSingle();
   return data as import("./menu-shared").MenuItem | null;
+}
+
+/** Funnel event for partner reports: a customer started a cart with this restaurant. */
+export async function logCartStart(restaurantId: string) {
+  const id = z.string().uuid().safeParse(restaurantId);
+  if (!id.success) return;
+  const user = await getSessionUser();
+  const supabase = await getSupabaseServerClient();
+  await supabase.from("analytics_events").insert({ restaurant_id: id.data, user_id: user?.id ?? null, event: "add_to_cart" });
 }
