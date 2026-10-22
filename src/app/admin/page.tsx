@@ -1,35 +1,19 @@
-import { Bike, IndianRupee, ShoppingBag, Store } from "lucide-react";
+import { OverviewDashboard } from "@/components/admin/overview/overview-dashboard";
 import { PageHeader } from "@/components/shared/page-header";
-import { Card, CardContent } from "@/components/ui/card";
-import { formatPaise } from "@/lib/utils";
+import { currentDemoOrderId } from "@/lib/admin/demo";
+import { fetchOverview } from "@/lib/admin/overview";
+import { requireRole } from "@/lib/auth/session";
+import { isDemoMode } from "@/lib/env";
 
-// Live numbers come from the database in Phase 9; zeros until then.
-const stats = [
-  { label: "GMV today", value: formatPaise(0), icon: IndianRupee },
-  { label: "Orders today", value: "0", icon: ShoppingBag },
-  { label: "Active restaurants", value: "0", icon: Store },
-  { label: "Riders online", value: "0", icon: Bike },
-];
+export const dynamic = "force-dynamic";
 
-export default function AdminOverviewPage() {
+export default async function AdminOverviewPage() {
+  await requireRole(["admin"], "/admin");
+  const [overview, demoOrderId] = await Promise.all([fetchOverview(14), isDemoMode ? currentDemoOrderId() : Promise.resolve(null)]);
   return (
     <>
-      <PageHeader title="Overview" description="Live view of the platform." />
-      <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
-        {stats.map(({ label, value, icon: Icon }) => (
-          <Card key={label}>
-            <CardContent className="flex items-center gap-3 p-5">
-              <span className="flex size-10 items-center justify-center rounded-xl bg-secondary text-primary">
-                <Icon className="size-5" aria-hidden />
-              </span>
-              <div>
-                <p className="text-xs text-muted-foreground">{label}</p>
-                <p className="font-display text-xl font-bold">{value}</p>
-              </div>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
+      <PageHeader title="Overview" description="Live view of orders, riders and restaurants across the platform." />
+      <OverviewDashboard initial={overview} demo={{ enabled: isDemoMode, orderId: demoOrderId }} />
     </>
   );
 }

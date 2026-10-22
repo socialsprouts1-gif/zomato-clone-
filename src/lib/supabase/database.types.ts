@@ -1901,6 +1901,48 @@ export type Database = {
           },
         ];
       };
+      payout_adjustments: {
+        Row: {
+          id: string;
+          payout_id: string;
+          amount_paise: number;
+          note: string;
+          created_by: string | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          payout_id: string;
+          amount_paise: number;
+          note: string;
+          created_by?: string | null;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          payout_id?: string;
+          amount_paise?: number;
+          note?: string;
+          created_by?: string | null;
+          created_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "payout_adjustments_created_by_fkey";
+            columns: ["created_by"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "payout_adjustments_payout_id_fkey";
+            columns: ["payout_id"];
+            isOneToOne: false;
+            referencedRelation: "payouts";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       payouts: {
         Row: {
           id: string;
@@ -1919,6 +1961,7 @@ export type Database = {
           status: string;
           paid_at: string | null;
           created_at: string;
+          cash_held_paise: number;
         };
         Insert: {
           id?: string;
@@ -1937,6 +1980,7 @@ export type Database = {
           status?: string;
           paid_at?: string | null;
           created_at?: string;
+          cash_held_paise?: number;
         };
         Update: {
           id?: string;
@@ -1955,6 +1999,7 @@ export type Database = {
           status?: string;
           paid_at?: string | null;
           created_at?: string;
+          cash_held_paise?: number;
         };
         Relationships: [
           {
@@ -3320,13 +3365,16 @@ export type Database = {
     };
     Views: { [_ in never]: never };
     Functions: {
+      add_payout_adjustment: { Args: { p_payout: string; p_amount: number; p_note: string; p_admin: string }; Returns: Database["public"]["Tables"]["payouts"]["Row"] };
       addon_group_restaurant: { Args: { gid: string }; Returns: string };
       adjust_menu_stock: { Args: { p_item: string; p_delta: number }; Returns: number };
+      admin_overview: { Args: { p_days?: number }; Returns: Json };
       can_see_restaurant: { Args: { rid: string }; Returns: boolean };
       can_view_order: { Args: { oid: string }; Returns: boolean };
       current_user_role: { Args: Record<PropertyKey, never>; Returns: Database["public"]["Enums"]["user_role"] };
       find_nearest_rider: { Args: { p_lat: number; p_lng: number; max_km: number; exclude?: string[] }; Returns: string };
       generate_restaurant_payout: { Args: { rid: string; p_start: unknown; p_end: unknown }; Returns: Database["public"]["Tables"]["payouts"]["Row"] };
+      generate_rider_payout: { Args: { p_rider: string; p_start: unknown; p_end: unknown }; Returns: Database["public"]["Tables"]["payouts"]["Row"] };
       has_active_order_with_rider: { Args: { rid: string }; Returns: boolean };
       haversine_km: { Args: { lat1: number; lng1: number; lat2: number; lng2: number }; Returns: number };
       increment_coupon_use: { Args: { p_coupon: string }; Returns: undefined };
@@ -3336,6 +3384,7 @@ export type Database = {
       is_service_context: { Args: Record<PropertyKey, never>; Returns: boolean };
       ist_window: { Args: { p_start: unknown; p_end: unknown }; Returns: unknown };
       item_restaurant: { Args: { iid: string }; Returns: string };
+      mark_payout_paid: { Args: { p_payout: string }; Returns: Database["public"]["Tables"]["payouts"]["Row"] };
       my_restaurant_ids: { Args: Record<PropertyKey, never>; Returns: string[] };
       partner_report: { Args: { rid: string; p_from: unknown; p_to: unknown }; Returns: Json };
       payout_statement: { Args: { rid: string; p_start: unknown; p_end: unknown }; Returns: Json };
@@ -3343,6 +3392,7 @@ export type Database = {
       random_code: { Args: { len: number }; Returns: string };
       restaurant_order_counts: { Args: { days?: number }; Returns: { restaurant_id: string; orders: number }[] };
       restaurants_near: { Args: { p_lat: number; p_lng: number; radius_km: number }; Returns: { restaurant_id: string; distance_km: number }[] };
+      rider_payout_statement: { Args: { p_rider: string; p_start: unknown; p_end: unknown }; Returns: Json };
       search_dishes: { Args: { q: string; lim?: number }; Returns: Database["public"]["Tables"]["menu_items"]["Row"][] };
       search_restaurants: { Args: { q: string; lim?: number }; Returns: Database["public"]["Tables"]["restaurants"]["Row"][] };
       trending_searches: { Args: { days?: number; lim?: number }; Returns: { query: string; hits: number }[] };

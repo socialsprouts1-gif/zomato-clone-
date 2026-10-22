@@ -30,15 +30,21 @@ export function amountPaid(o: Order) {
   return online + cod + o.wallet_used_paise;
 }
 
+/** Refunds at most once per order: the refund is claimed (refunded_at is null → now) before money moves. */
 export async function refundToWallet(o: Order, reason: string, amount = amountPaid(o)) {
   const db = getSupabaseAdminClient();
+  const { data: claimed } = await db
+    .from("orders")
+    .update({ refund_paise: amount, refund_to: "wallet", refunded_at: new Date().toISOString(), payment_status: amount > 0 ? "refunded" : o.payment_status })
+    .eq("id", o.id)
+    .is("refunded_at", null)
+    .select("id")
+    .maybeSingle();
+  if (!claimed) return false;
   if (amount > 0) {
     await db.rpc("wallet_apply", { p_user: o.customer_id, p_amount: amount, p_type: "refund", p_description: `Refund for order #${o.order_number}: ${reason}`, p_reference: o.id });
   }
-  await db
-    .from("orders")
-    .update({ refund_paise: amount, refund_to: "wallet", refunded_at: new Date().toISOString(), payment_status: amount > 0 ? "refunded" : o.payment_status })
-    .eq("id", o.id);
+  return true;
 }
 
 async function restock(orderId: string) {
