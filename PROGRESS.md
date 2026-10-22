@@ -133,17 +133,17 @@ Ticked only when verified working (tests or manual check).
 - [x] Simulated rider auto-accept
 
 ## 6. Admin
-- [ ] Overview dashboard with live map + charts
-- [ ] Orders: search, detail, reassign, cancel/refund
-- [ ] Restaurants: approve, edit, suspend, commission, feature
-- [ ] Riders: approve, suspend, live location
-- [ ] Users: block, wallet credits
-- [ ] Coupons
-- [ ] Banners & collections
-- [ ] Gold plans + members
-- [ ] Zones & fees + surge
-- [ ] Support tickets
-- [ ] Food Rescue log, donations, events
-- [ ] Payouts generation
-- [ ] Audit log
-- [ ] Run full demo button
+- [x] Overview dashboard with live map + charts
+- [x] Orders: search, detail, reassign, cancel/refund
+- [x] Restaurants: approve, edit, suspend, commission, feature
+- [x] Riders: approve, suspend, live location
+- [x] Users: block, wallet credits
+- [x] Coupons
+- [x] Banners & collections
+- [x] Gold plans + members
+- [x] Zones & fees + surge
+- [x] Support tickets
+- [x] Food Rescue log, donations, events
+- [x] Payouts generation
+- [x] Audit log
+- [x] Run full demo button
