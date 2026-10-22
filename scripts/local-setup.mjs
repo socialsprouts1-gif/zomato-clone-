@@ -53,8 +53,8 @@ if (process.argv.includes("--stop")) {
   process.exit(0);
 }
 try {
+  run(`${CLI} start`); // no-op if it's already running
   if (process.argv.includes("--reset")) run(`${CLI} db reset`);
-  else run(`${CLI} start`);
 } catch {
   console.error(`
 ✗ Supabase didn't start. Things to try:
