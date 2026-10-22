@@ -170,7 +170,11 @@ export async function getHomeSections(list: RestaurantCardData[], userId: string
     .map((c) => ({ ...c, count: c.collection_items.filter((i) => visible.has(i.restaurant_id)).length }))
     .filter((c) => c.count > 0);
 
-  return { trending, topRated, recommended, collections: curated, banners: banners ?? [], favourites: favs };
+  // Respect the admin's banner schedule (starts_at / ends_at).
+  const now = Date.now();
+  const live = (banners ?? []).filter((b) => (!b.starts_at || Date.parse(b.starts_at) <= now) && (!b.ends_at || Date.parse(b.ends_at) > now));
+
+  return { trending, topRated, recommended, collections: curated, banners: live, favourites: favs };
 }
 
 export function allCuisines(list: RestaurantCardData[]) {
