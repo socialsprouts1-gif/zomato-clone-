@@ -1,4 +1,4 @@
-import { BadgePercent, Clock, ExternalLink, MapPin, Phone, Share2, ShieldCheck } from "lucide-react";
+import { BadgePercent, Clock, ExternalLink, MapPin, Phone, QrCode, Share2, ShieldCheck } from "lucide-react";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { GoldBadge, PureVegTag, RatingPill } from "@/components/catalog/badges";
@@ -34,12 +34,13 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   return r ? { title: `${r.name}, ${r.locality}`, description: r.description ?? undefined } : { title: "Restaurant" };
 }
 
-export default async function RestaurantPage({ params }: { params: Promise<{ slug: string }> }) {
+export default async function RestaurantPage({ params, searchParams }: { params: Promise<{ slug: string }>; searchParams: Promise<{ table?: string }> }) {
   const { slug } = await params;
+  const { table: tableToken } = await searchParams;
   const [r, prefs, user] = await Promise.all([loadRestaurant(slug), getPreferences(), getSessionUser()]);
   if (!r) notFound();
   const supabase = await getSupabaseServerClient();
-  const [{ categories, items }, { data: reviews }, fav] = await Promise.all([
+  const [{ categories, items }, { data: reviews }, fav, { data: table }] = await Promise.all([
     getMenu(r.id),
     supabase
       .from("reviews")
@@ -48,6 +49,10 @@ export default async function RestaurantPage({ params }: { params: Promise<{ slu
       .order("created_at", { ascending: false })
       .limit(100),
     user ? supabase.from("favourites").select("restaurant_id").eq("restaurant_id", r.id).maybeSingle() : Promise.resolve({ data: null }),
+    // Dine-in QR (partner Tables & QR codes): /restaurant/<slug>?table=<qr_token>
+    tableToken && /^[A-Za-z0-9-]{4,40}$/.test(tableToken)
+      ? supabase.from("restaurant_tables").select("label, section").eq("restaurant_id", r.id).eq("qr_token", tableToken).eq("is_active", true).maybeSingle()
+      : Promise.resolve({ data: null }),
   ]);
 
   const now = new Date();
@@ -77,6 +82,15 @@ export default async function RestaurantPage({ params }: { params: Promise<{ slu
           ))}
         </div>
       </div>
+
+      {table ? (
+        <p className="flex items-center gap-3 rounded-2xl border border-primary/40 bg-secondary/60 p-3 text-sm" data-testid="table-banner">
+          <QrCode className="size-5 shrink-0 text-primary" aria-hidden />
+          <span>
+            <span className="font-semibold">You&apos;re at Table {table.label}</span> · {table.section}. Browse the menu and tell your server when you&apos;re ready to order.
+          </span>
+        </p>
+      ) : null}
 
       <Card className="space-y-3 p-5">
         <div className="flex items-start justify-between gap-3">

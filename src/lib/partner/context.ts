@@ -45,3 +45,20 @@ export const getPartnerContext = cache(async (next = "/partner") => {
   current ??= outlets[0] ?? null;
   return { user, outlets, current };
 });
+
+export type OutletRole = "owner" | "manager" | "order_taker" | "admin";
+
+/**
+ * The caller's role at an outlet: owner (restaurants.owner_id), active staff role, or admin.
+ * Owners manage staff; owners and managers edit settings; order takers handle orders and bookings only.
+ */
+export const getOutletRole = cache(async (userId: string, platformRole: string, restaurantId: string): Promise<OutletRole | null> => {
+  const supabase = await getSupabaseServerClient();
+  const [{ data: r }, { data: staff }] = await Promise.all([
+    supabase.from("restaurants").select("owner_id").eq("id", restaurantId).maybeSingle(),
+    supabase.from("restaurant_staff").select("role").eq("restaurant_id", restaurantId).eq("user_id", userId).eq("status", "active").maybeSingle(),
+  ]);
+  if (r?.owner_id === userId) return "owner";
+  if (staff?.role === "manager" || staff?.role === "order_taker") return staff.role;
+  return platformRole === "admin" ? "admin" : null;
+});

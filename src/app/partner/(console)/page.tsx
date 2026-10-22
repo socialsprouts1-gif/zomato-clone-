@@ -1,8 +1,11 @@
 import { Store } from "lucide-react";
+import Link from "next/link";
 import { LiveOrdersBoard } from "@/components/partner/live-orders-board";
+import { PendingReview } from "@/components/partner/onboarding/pending-review";
 import { OutletStatusControls } from "@/components/partner/outlet-controls";
 import { EmptyState } from "@/components/shared/empty-state";
 import { PageHeader } from "@/components/shared/page-header";
+import { Button } from "@/components/ui/button";
 import { getPartnerContext } from "@/lib/partner/context";
 import { loadLiveOrders } from "@/lib/partner/orders";
 
@@ -12,7 +15,16 @@ export default async function PartnerLiveOrdersPage() {
     return (
       <>
         <PageHeader title="Live orders" />
-        <EmptyState icon={Store} title="No outlet yet" description="Register your restaurant to start receiving orders." />
+        <EmptyState
+          icon={Store}
+          title="No outlet yet"
+          description="Register your restaurant to start receiving orders."
+          action={
+            <Button asChild>
+              <Link href="/partner/onboarding">Register your restaurant</Link>
+            </Button>
+          }
+        />
       </>
     );
   }
@@ -20,7 +32,7 @@ export default async function PartnerLiveOrdersPage() {
     return (
       <>
         <PageHeader title="Live orders" description={current.name} />
-        <EmptyState icon={Store} title="Your restaurant is under review" description="Our team usually approves new restaurants within a day. You'll be notified as soon as you go live." />
+        <PendingReview outlets={[current]} />
       </>
     );
   }

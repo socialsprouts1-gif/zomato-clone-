@@ -8,7 +8,7 @@ import { getSessionUser, homeForRole } from "@/lib/auth/session";
 export const metadata: Metadata = { title: "No access" };
 
 const help: Record<string, { title: string; body: string; cta?: { href: string; label: string } }> = {
-  restaurant_owner: { title: "This is the restaurant partner app", body: "Register your restaurant to start receiving orders." },
+  restaurant_owner: { title: "This is the restaurant partner app", body: "Register your restaurant to start receiving orders.", cta: { href: "/partner/onboarding", label: "Register your restaurant" } },
   rider: { title: "This is the delivery partner app", body: "Sign up as a delivery partner to start earning.", cta: { href: "/rider/onboarding", label: "Become a delivery partner" } },
   admin: { title: "Admins only", body: "This console is for platform operators." },
 };
