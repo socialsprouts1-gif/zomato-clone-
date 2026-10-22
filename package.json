@@ -18,7 +18,7 @@
     "dev:migrate": "scripts/dev-stack/migrate.sh",
     "local:setup": "node scripts/local-setup.mjs",
     "local:reset": "node scripts/local-setup.mjs --reset",
-    "local:stop": "npx -y supabase@2.53.6 stop"
+    "local:stop": "node scripts/local-setup.mjs --stop"
   },
   "dependencies": {
     "@hookform/resolvers": "^6.0.0",

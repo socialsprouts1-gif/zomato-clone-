@@ -9,9 +9,18 @@
 import { execSync } from "node:child_process";
 import { existsSync, readFileSync, writeFileSync } from "node:fs";
 
-const CLI = "npx -y supabase@2.53.6";
-const run = (cmd) => execSync(cmd, { stdio: "inherit" });
-const read = (cmd) => execSync(cmd, { encoding: "utf8", stdio: ["ignore", "pipe", "inherit"] });
+// npm 11+ blocks package install scripts by default, and the Supabase CLI package needs its install script
+// to download the binary, so allow it explicitly. A globally installed `supabase` (e.g. Homebrew) wins.
+const ENV = { ...process.env, npm_config_allow_scripts: "supabase", npm_config_yes: "true" };
+let CLI = "npx -y supabase@2.53.6";
+try {
+  execSync("supabase --version", { stdio: "ignore" });
+  CLI = "supabase";
+} catch {
+  // not installed globally; use npx
+}
+const run = (cmd) => execSync(cmd, { stdio: "inherit", env: ENV });
+const read = (cmd) => execSync(cmd, { encoding: "utf8", stdio: ["ignore", "pipe", "inherit"], env: ENV });
 
 try {
   execSync("docker info", { stdio: "ignore" });
@@ -20,8 +29,21 @@ try {
   process.exit(1);
 }
 
-if (process.argv.includes("--reset")) run(`${CLI} db reset`);
-else run(`${CLI} start`);
+if (process.argv.includes("--stop")) {
+  run(`${CLI} stop`);
+  process.exit(0);
+}
+try {
+  if (process.argv.includes("--reset")) run(`${CLI} db reset`);
+  else run(`${CLI} start`);
+} catch {
+  console.error(`
+✗ Supabase didn't start. Things to try:
+  • Make sure Docker Desktop is open and running, then run \`pnpm local:setup\` again.
+  • Install the Supabase CLI directly (macOS: \`brew install supabase/tap/supabase\`), then run \`pnpm local:setup\` again.
+`);
+  process.exit(1);
+}
 
 // `status -o env` prints KEY="value" lines.
 const env = Object.fromEntries(
@@ -66,5 +88,5 @@ console.log(`
   Next:   pnpm dev            → http://localhost:3000
   Studio: ${env.STUDIO_URL ?? "http://localhost:54323"}   (browse the database)
   Emails: ${env.INBUCKET_URL ?? env.MAILPIT_URL ?? "http://localhost:54324"}   (magic-link emails)
-  Stop:   npx supabase stop
+  Stop:   pnpm local:stop
 `);
