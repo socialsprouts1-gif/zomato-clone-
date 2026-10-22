@@ -172,8 +172,9 @@ const applicationSchema = z.object({
   bank_account_name: z.string().trim().min(2).max(60),
   bank_account_number: z.string().trim().regex(/^\d{9,18}$/, "9–18 digit account number"),
   bank_ifsc: z.string().trim().toUpperCase().regex(/^[A-Z]{4}0[A-Z0-9]{6}$/, "Invalid IFSC"),
-  driving_license_url: z.string().url().nullable().optional(),
-  vehicle_rc_url: z.string().url().nullable().optional(),
+  // Object paths in the private rider-docs bucket, inside the rider's own folder (checked below).
+  driving_license_url: z.string().regex(/^[0-9a-f-]{36}\/[\w.-]+$/).nullable().optional(),
+  vehicle_rc_url: z.string().regex(/^[0-9a-f-]{36}\/[\w.-]+$/).nullable().optional(),
 });
 export type RiderApplication = z.input<typeof applicationSchema>;
 
@@ -185,6 +186,7 @@ export async function submitRiderApplication(input: RiderApplication): Promise<R
   if (!parsed.success) return { ok: false, error: parsed.error.issues[0]?.message ?? "Check the form" };
   const v = parsed.data;
   if (v.vehicle_type !== "bicycle" && !v.vehicle_number) return { ok: false, error: "Enter your vehicle number" };
+  if ([v.driving_license_url, v.vehicle_rc_url].some((p) => p && !p.startsWith(`${user.id}/`))) return { ok: false, error: "Upload your documents again" };
   const db = getSupabaseAdminClient();
   const { error } = await db.from("riders").upsert({ id: user.id, name: v.name, phone: v.phone, vehicle_type: v.vehicle_type, vehicle_number: v.vehicle_number ?? null, status: "pending" });
   if (error) return { ok: false, error: error.message };

@@ -46,6 +46,11 @@ const CORS = {
     "authorization,apikey,content-type,x-client-info,prefer,accept-profile,content-profile,range,x-upsert,cache-control,x-supabase-api-version",
   "access-control-expose-headers": "content-range,content-location,x-total-count",
 };
+function signJwt(claims) {
+  const h = Buffer.from(JSON.stringify({ alg: "HS256", typ: "JWT" })).toString("base64url");
+  const p = Buffer.from(JSON.stringify(claims)).toString("base64url");
+  return `${h}.${p}.${createHmac("sha256", JWT_SECRET).update(`${h}.${p}`).digest("base64url")}`;
+}
 function bearer(req) {
   const h = req.headers.authorization ?? "";
   return h.startsWith("Bearer ") ? h.slice(7) : (req.headers.apikey ?? "");
@@ -84,6 +89,7 @@ function safeJoin(...parts) {
   if (!p.startsWith(STORAGE_DIR)) throw new Error("bad path");
   return p;
 }
+const PRIVATE_BUCKETS = new Set(["rider-docs", "restaurant-docs"]);
 const MIME = { ".png": "image/png", ".jpg": "image/jpeg", ".jpeg": "image/jpeg", ".webp": "image/webp", ".gif": "image/gif", ".pdf": "application/pdf", ".svg": "image/svg+xml" };
 
 async function storage(req, res) {
@@ -95,7 +101,14 @@ async function storage(req, res) {
   const rest = decodeURIComponent(u.pathname.replace(/^\/storage\/v1\//, ""));
   try {
     if (req.method === "GET" && /^object\/(public|authenticated|sign)\//.test(rest)) {
+      const [, mode] = /^object\/(public|authenticated|sign)\//.exec(rest);
       const rel = rest.replace(/^object\/(public|authenticated|sign)\//, "");
+      // Private buckets behave like Supabase: no public reads; signed URLs need a valid token for this exact path.
+      if (PRIVATE_BUCKETS.has(rel.split("/")[0])) {
+        if (mode === "public") return json(400, { statusCode: "404", error: "Bucket not found", message: "Bucket is not public" });
+        if (mode === "sign" && verifyJwt(u.searchParams.get("token") ?? "")?.url !== rel) return json(400, { message: "Invalid signature" });
+        if (mode === "authenticated" && !verifyJwt(bearer(req))) return json(401, { message: "Invalid JWT" });
+      }
       const file = safeJoin(rel);
       if (!fs.existsSync(file)) return json(404, { message: "Object not found" });
       const meta = fs.existsSync(`${file}.__type`) ? fs.readFileSync(`${file}.__type`, "utf8") : MIME[path.extname(file)] ?? "application/octet-stream";
@@ -104,6 +117,13 @@ async function storage(req, res) {
     }
     const claims = verifyJwt(bearer(req));
     if (!claims) return json(401, { message: "Invalid JWT" });
+    if (req.method === "POST" && rest.startsWith("object/sign/")) {
+      // Dev shim trusts any valid JWT to sign (the app only signs with the service role, after its own checks).
+      const rel = rest.slice("object/sign/".length);
+      const { expiresIn = 60 } = JSON.parse((await readBody(req)).toString() || "{}");
+      const token = signJwt({ url: rel, exp: Math.floor(Date.now() / 1000) + Number(expiresIn) });
+      return json(200, { signedURL: `/object/sign/${encodeURI(rel)}?token=${token}` });
+    }
     if ((req.method === "POST" || req.method === "PUT") && rest.startsWith("object/")) {
       const rel = rest.slice("object/".length);
       const file = safeJoin(rel);

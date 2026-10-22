@@ -374,14 +374,16 @@ export async function submitOnboarding(input: OnboardingInput) {
 const mediaSchema = z.object({
   cover_image_url: z.string().url().optional(),
   logo_url: z.string().url().optional(),
-  documents: z.partialRecord(z.enum(["fssai_licence", "gst_certificate", "cancelled_cheque"]), z.string().url()).optional(),
+  // Object paths in the private restaurant-docs bucket (checked against the restaurant id below).
+  documents: z.partialRecord(z.enum(["fssai_licence", "gst_certificate", "cancelled_cheque"]), z.string().regex(/^[0-9a-f-]{36}\/onboarding\/[\w.-]+$/)).optional(),
 });
 
-/** Attaches photos/documents uploaded (to restaurant-media/<id>/…) after the restaurant was created. */
+/** Attaches photos (restaurant-media) and document paths (private restaurant-docs) uploaded after the restaurant was created. */
 export async function attachOnboardingMedia(restaurantId: string, input: z.input<typeof mediaSchema>) {
   return run(async () => {
     await guard(restaurantId, "owner");
     const v = mediaSchema.parse(input);
+    if (Object.values(v.documents ?? {}).some((p) => !p.startsWith(`${restaurantId}/`))) throw new Error("Invalid document");
     const supabase = await getSupabaseServerClient();
     const patch: { cover_image_url?: string; logo_url?: string } = {};
     if (v.cover_image_url) patch.cover_image_url = v.cover_image_url;

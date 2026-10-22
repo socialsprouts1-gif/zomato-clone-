@@ -50,7 +50,7 @@ function FileField({ id, label, userId, onUploaded }: { id: string; label: strin
           setBusy(false);
           if (error) return void toast.error(error.message);
           setName(f.name);
-          onUploaded(supabase.storage.from("rider-docs").getPublicUrl(path).data.publicUrl);
+          onUploaded(path); // private bucket: keep the path; admins view it through a signed URL
         }}
       />
     </div>

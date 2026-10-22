@@ -141,10 +141,13 @@ export function OnboardingForm({ defaults }: { defaults: { owner_name: string; o
         const supabase = getSupabaseBrowserClient();
         const urls: Partial<Record<UploadKey, string>> = {};
         for (const [key, f] of picked) {
+          // Photos are public; legal documents go to a private bucket and we keep only their path.
+          const isPhoto = key === "cover" || key === "logo";
+          const bucket = isPhoto ? "restaurant-media" : "restaurant-docs";
           const path = `${id}/onboarding/${key}-${crypto.randomUUID()}.${f.name.split(".").pop() ?? "bin"}`;
-          const { error } = await supabase.storage.from("restaurant-media").upload(path, f, { upsert: true, contentType: f.type });
+          const { error } = await supabase.storage.from(bucket).upload(path, f, { upsert: true, contentType: f.type });
           if (error) toast.error(`${UPLOADS.find((u) => u.key === key)?.label} didn't upload. You can send it to us later.`);
-          else urls[key] = supabase.storage.from("restaurant-media").getPublicUrl(path).data.publicUrl;
+          else urls[key] = isPhoto ? supabase.storage.from(bucket).getPublicUrl(path).data.publicUrl : path;
         }
         const documents = Object.fromEntries(Object.entries(urls).filter(([k]) => k !== "cover" && k !== "logo"));
         await attachOnboardingMedia(id, { cover_image_url: urls.cover, logo_url: urls.logo, documents });
