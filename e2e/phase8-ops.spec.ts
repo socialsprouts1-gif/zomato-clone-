@@ -198,8 +198,8 @@ test("a customer registers a restaurant and sees the pending review screen", asy
   await page.getByRole("button", { name: /verify/i }).click();
   await expect(page).toHaveURL(/\/$/);
 
-  await page.goto("/partner");
-  await expect(page).toHaveURL(/\/forbidden/);
+  // (In demo mode /partner opens the demo owner's console, so a new customer starts onboarding from the CTA page.)
+  await page.goto("/forbidden?need=restaurant_owner,restaurant_staff,admin&next=%2Fpartner");
   await page.getByRole("link", { name: "Register your restaurant" }).click();
   await expect(page).toHaveURL(/\/partner\/onboarding/);
 

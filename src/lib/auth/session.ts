@@ -2,7 +2,8 @@ import "server-only";
 
 import { redirect } from "next/navigation";
 import { cache } from "react";
-import { isSupabaseConfigured } from "@/lib/env";
+import { signInHref } from "@/config/demo";
+import { isDemoMode, isSupabaseConfigured } from "@/lib/env";
 import { getSupabaseServerClient } from "@/lib/supabase/server";
 import type { Enums, Tables } from "@/lib/supabase/database.types";
 
@@ -23,16 +24,19 @@ export const getSessionUser = cache(async (): Promise<SessionUser | null> => {
 
 export async function requireUser(next: string): Promise<SessionUser> {
   const user = await getSessionUser();
-  if (!user) redirect(`/login?next=${encodeURIComponent(next)}`);
+  if (!user) redirect(signInHref(next, isDemoMode));
   if (user.profile.is_blocked) redirect("/blocked");
   return user;
 }
 
 export async function requireRole(roles: Role[], next: string, loginPath = "/login"): Promise<SessionUser> {
   const user = await getSessionUser();
-  if (!user) redirect(`${loginPath}?next=${encodeURIComponent(next)}`);
+  // Demo mode has no login wall: sign in the matching demo account instead (see /demo/enter).
+  if (!user) redirect(isDemoMode ? signInHref(next, true) : `${loginPath}?next=${encodeURIComponent(next)}`);
   if (user.profile.is_blocked) redirect("/blocked");
-  if (!roles.includes(user.profile.role)) redirect(`/forbidden?need=${roles.join(",")}&next=${encodeURIComponent(next)}`);
+  if (!roles.includes(user.profile.role)) {
+    redirect(isDemoMode ? signInHref(next, true) : `/forbidden?need=${roles.join(",")}&next=${encodeURIComponent(next)}`);
+  }
   return user;
 }
 

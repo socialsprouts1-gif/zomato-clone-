@@ -3,9 +3,9 @@ import { latestMail, loginAs, setLocation } from "./helpers";
 
 test.describe.configure({ mode: "serial" });
 
-test("first visit shows splash then location screen; skip lands on home", async ({ page }) => {
-  await page.goto("/");
-  await expect(page).toHaveURL(/\/welcome/);
+test("location screen; skip lands on home", async ({ page }) => {
+  // In demo mode a first visit to / skips this screen (the demo customer's location is used), so open it directly.
+  await page.goto("/welcome");
   await expect(page.getByRole("heading", { name: /where should we deliver/i })).toBeVisible({ timeout: 5000 });
   await page.getByRole("button", { name: /skip for now/i }).click();
   await expect(page).toHaveURL(/\/$/);
@@ -81,19 +81,31 @@ test("email magic link sign-in", async ({ page, context }) => {
   await expect(page.getByRole("heading", { name: "Ananya Iyer" })).toBeVisible();
 });
 
-test("password sign-in and role guards", async ({ page, context }) => {
-  await setLocation(context);
+test("demo mode: every app opens without a login screen", async ({ page }) => {
+  // Fresh browser, no session, no location: each app signs in its demo account.
   await page.goto("/partner");
-  await expect(page).toHaveURL(/\/login\?next=%2Fpartner/);
+  await expect(page).toHaveURL(/\/partner$/);
+  await expect(page.getByRole("button", { name: "Switch outlet" })).toBeVisible();
+  await page.goto("/rider");
+  await expect(page).toHaveURL(/\/rider$/);
+  await page.goto("/admin");
+  await expect(page).toHaveURL(/\/admin$/);
+  await expect(page.getByRole("heading", { name: "Overview" })).toBeVisible();
+  await page.context().clearCookies();
+  await page.goto("/");
+  await expect(page).toHaveURL(/\/$/);
+  await expect(page.getByRole("link", { name: "Your account" }).or(page.getByRole("link", { name: /account/i })).first()).toBeVisible();
+});
+
+test("password sign-in from the login page", async ({ page, context }) => {
+  await setLocation(context);
+  await page.goto("/login?next=%2Faccount");
   await page.getByRole("tab", { name: /email/i }).click();
   await page.getByRole("button", { name: /sign in with a password/i }).click();
   await page.getByRole("textbox", { name: "Email" }).fill("customer@demo.in");
   await page.getByLabel("Password").fill("Demo@1234");
   await page.getByRole("button", { name: /^sign in$/i }).click();
-  await expect(page).toHaveURL(/\/forbidden/);
-  await page.goto("/admin");
-  await expect(page).toHaveURL(/\/forbidden/);
-  await expect(page.getByRole("heading", { name: /admins only/i })).toBeVisible();
+  await expect(page).toHaveURL(/\/account/);
 });
 
 test("customer adds a saved address with a map pin", async ({ page }) => {

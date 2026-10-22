@@ -6,6 +6,7 @@ import { useState, useTransition } from "react";
 import { toast } from "sonner";
 import { toggleFavourite } from "@/lib/catalog/actions";
 import { cn } from "@/lib/utils";
+import { signInHref } from "@/config/demo";
 
 export function FavouriteButton({ restaurantId, name, initial, className }: { restaurantId: string; name: string; initial: boolean; className?: string }) {
   const [fav, setFav] = useState(initial);
@@ -28,7 +29,7 @@ export function FavouriteButton({ restaurantId, name, initial, className }: { re
             setFav(!next);
             if (res.error === "login") {
               toast("Sign in to save favourites");
-              router.push(`/login?next=${encodeURIComponent(pathname)}`);
+              router.push(signInHref(pathname, process.env.NEXT_PUBLIC_DEMO_MODE === "true"));
             } else toast.error(res.error);
             return;
           }

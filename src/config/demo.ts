@@ -67,3 +67,14 @@ export const demoPersonas: DemoPersona[] = [
     href: "/admin",
   },
 ];
+
+/** In demo mode, which persona opens each app without a login screen. */
+export function personaForPath(path: string): DemoPersona {
+  const id = path.startsWith("/admin") ? "admin" : path.startsWith("/partner") ? "owner-1" : path.startsWith("/rider") ? "rider" : "customer";
+  return demoPersonas.find((p) => p.id === id)!;
+}
+
+/** Where to send a visitor who needs to be signed in: the login page, or (demo mode) an automatic demo sign-in. */
+export function signInHref(next: string, demo: boolean): string {
+  return demo ? `/demo/enter?as=${personaForPath(next).id}&next=${encodeURIComponent(next)}` : `/login?next=${encodeURIComponent(next)}`;
+}
