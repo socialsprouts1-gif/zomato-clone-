@@ -4,6 +4,11 @@ import {
   CalendarCheck,
   ClipboardList,
   Compass,
+  Crown,
+  HeartHandshake,
+  Images,
+  LifeBuoy,
+  ScrollText,
   History,
   Home,
   LayoutDashboard,
@@ -58,8 +63,14 @@ export const adminNav: NavItem[] = [
   { href: "/admin/restaurants", label: "Restaurants", icon: Store },
   { href: "/admin/riders", label: "Riders", icon: Bike },
   { href: "/admin/users", label: "Users", icon: Users },
-  { href: "/admin/coupons", label: "Coupons & banners", icon: Ticket },
+  { href: "/admin/coupons", label: "Coupons", icon: Ticket },
+  { href: "/admin/content", label: "Banners & collections", icon: Images },
+  { href: "/admin/gold", label: "Gold", icon: Crown },
   { href: "/admin/settings", label: "Zones & fees", icon: Compass },
+  { href: "/admin/support", label: "Support", icon: LifeBuoy },
+  { href: "/admin/rescue", label: "Food Rescue & events", icon: HeartHandshake },
+  { href: "/admin/payouts", label: "Payouts", icon: Wallet },
+  { href: "/admin/audit", label: "Audit log", icon: ScrollText },
 ];
 
 /** Root paths match exactly; others also match their sub-pages. */
