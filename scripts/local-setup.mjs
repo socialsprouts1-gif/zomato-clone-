@@ -8,10 +8,11 @@
  */
 import { execSync } from "node:child_process";
 import { chmodSync, existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import os from "node:os";
 import path from "node:path";
 
 // Supabase CLI: use a globally installed `supabase` (e.g. Homebrew) if there is one; otherwise download the
-// official release binary once into node_modules/.cache (npm-based installs break when npm blocks install scripts).
+// official release binary once into ~/.cache/thaali (npm-based installs break when npm blocks install scripts).
 const VERSION = "2.53.6";
 const ENV = process.env;
 function resolveCli() {
@@ -21,7 +22,8 @@ function resolveCli() {
   } catch {
     // not installed globally
   }
-  const dir = path.resolve("node_modules/.cache/supabase-cli");
+  // Kept in the user's home cache (not the project), so iCloud-synced folders like Desktop can't offload it.
+  const dir = path.join(os.homedir(), ".cache", "thaali", `supabase-cli-${VERSION}`);
   const bin = path.join(dir, process.platform === "win32" ? "supabase.exe" : "supabase");
   if (!existsSync(bin)) {
     const os = { darwin: "darwin", linux: "linux", win32: "windows" }[process.platform];
