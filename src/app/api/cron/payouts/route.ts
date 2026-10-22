@@ -1,10 +1,11 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { generatePayouts } from "@/lib/payouts";
+import { generateRiderPayouts } from "@/lib/payouts/riders";
 import { isIsoDate, lastCompleteWeek, todayIst, weekOf } from "@/lib/payouts/dates";
 
 /**
- * Weekly restaurant payouts (Vercel Cron, Monday 01:00 IST): generates last week's Mon–Sun statement
- * for every approved restaurant. Idempotent. `?week=YYYY-MM-DD` regenerates the week containing that date.
+ * Weekly payouts (Vercel Cron, Monday 01:00 IST): generates last week's Mon–Sun statement
+ * for every approved restaurant and rider. Idempotent. `?week=YYYY-MM-DD` regenerates the week containing that date.
  */
 export async function GET(req: NextRequest) {
   const secret = process.env.CRON_SECRET;
@@ -14,5 +15,6 @@ export async function GET(req: NextRequest) {
   const period = week ? weekOf(week) : lastCompleteWeek();
   if (period.end >= todayIst()) return NextResponse.json({ error: "That week hasn't finished yet" }, { status: 400 });
   const { payouts } = await generatePayouts(period);
-  return NextResponse.json({ ok: true, period, generated: payouts.length });
+  const riders = await generateRiderPayouts(period);
+  return NextResponse.json({ ok: true, period, generated: payouts.length, riders: riders.payouts.length });
 }

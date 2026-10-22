@@ -12,9 +12,27 @@ import { resolveTicket, sendSupportMessage } from "@/lib/support/actions";
 import { cn } from "@/lib/utils";
 
 type Msg = { id: string; sender_role: string; body: string; created_at: string };
+type ChatResult = { ok: true } | { ok: false; error: string };
 
-/** Support conversation, used by both the customer and the admin agent. */
-export function TicketChat({ ticketId, messages, as, status }: { ticketId: string; messages: Msg[]; as: "customer" | "agent"; status: string }) {
+/**
+ * Support conversation, used by both the customer and the admin agent. The admin console passes its
+ * own audited server actions as `sendAction` / `resolveAction`; the defaults are the customer actions.
+ */
+export function TicketChat({
+  ticketId,
+  messages,
+  as,
+  status,
+  sendAction = sendSupportMessage,
+  resolveAction = resolveTicket,
+}: {
+  ticketId: string;
+  messages: Msg[];
+  as: "customer" | "agent";
+  status: string;
+  sendAction?: (ticketId: string, body: string) => Promise<ChatResult>;
+  resolveAction?: (ticketId: string) => Promise<ChatResult>;
+}) {
   const router = useRouter();
   const [text, setText] = useState("");
   const [pending, start] = useTransition();
@@ -52,7 +70,7 @@ export function TicketChat({ ticketId, messages, as, status }: { ticketId: strin
             e.preventDefault();
             if (!text.trim()) return;
             start(async () => {
-              const r = await sendSupportMessage(ticketId, text);
+              const r = await sendAction(ticketId, text);
               if (!r.ok) return void toast.error(r.error);
               setText("");
               router.refresh();
@@ -71,7 +89,8 @@ export function TicketChat({ ticketId, messages, as, status }: { ticketId: strin
             className="w-full"
             onClick={() =>
               start(async () => {
-                await resolveTicket(ticketId);
+                const r = await resolveAction(ticketId);
+                if (!r.ok) return void toast.error(r.error);
                 toast.success("Marked as resolved");
                 router.refresh();
               })
