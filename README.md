@@ -11,15 +11,44 @@ A demo-ready food delivery and dining platform: customer app, restaurant partner
 | Rider | `/rider` |
 | Admin | `/admin` |
 
-## Setup
+## Run it locally
+
+You need **Node 20+**, **pnpm** (`npm i -g pnpm`) and **Docker Desktop** (running).
 
 ```bash
+git clone <this repo> && cd <repo>
+git checkout claude/new-session-cb3873
 pnpm install
-cp .env.example .env.local      # fill in Supabase (and later Razorpay) keys
-pnpm dev                        # http://localhost:3000
+pnpm local:setup     # starts a local Supabase in Docker, applies migrations + demo data, writes .env.local
+pnpm dev             # → http://localhost:3000
 ```
 
-The app runs without Supabase keys during Phase 0. Database setup and seeding are added in Phase 1.
+The first `pnpm local:setup` downloads the Supabase Docker images (a few GB), so it takes a few minutes. After that it starts in seconds.
+
+Then open:
+
+| App | URL | Sign in as |
+|---|---|---|
+| Customer | http://localhost:3000 | Customer (Priya) |
+| Restaurant partner | http://localhost:3000/partner | Owner (Saffron Courtyard) |
+| Rider | http://localhost:3000/rider | Rider (Arjun) |
+| Admin | http://localhost:3000/admin | Admin (Kavya) |
+
+Use the **Demo** button (bottom-left) to switch accounts instantly. Phone login accepts OTP **123456**. Open each app in its own browser window (or a private window per account) to watch an order move across all four at once. In the admin console, **Run full demo** places an order and walks it to "Delivered" in about 90 seconds.
+
+Payments run in demo mode (a test payment sheet) until Razorpay test keys are added to `.env.local`.
+
+Other commands: `pnpm local:reset` wipes and re-seeds the database · `pnpm local:stop` stops Supabase · Supabase Studio (database browser) is at http://localhost:54323 · magic-link emails land in http://localhost:54324.
+
+For a faster, production-like run: `pnpm build && pnpm start`.
+
+### Linux without Docker
+
+`scripts/dev-stack/start.sh` runs a lightweight Supabase stand-in (needs Postgres 16 and Linux x64; it downloads the Auth and PostgREST binaries). `scripts/dev-stack/start.sh --reset` re-creates and seeds the database, then `pnpm dev`. The automated tests run against this stack.
+
+### Connecting a real Supabase project
+
+Put the project's URL, anon key, service-role key and database connection string (`SUPABASE_DB_URL`) in `.env.local`, apply `supabase/migrations` (e.g. `npx supabase link` then `npx supabase db push`), then `pnpm seed` for the demo data.
 
 ## Scripts
 
@@ -37,9 +66,9 @@ If Playwright's bundled Chromium isn't installed, point it at another one:
 
 ## Demo accounts
 
-Created by the seed script (Phase 1). Password for all: `Demo@1234`.
+Created by the demo seed. Password for all: `Demo@1234`.
 
-`customer@demo.in` · `owner@demo.in` · `owner2@demo.in` · `owner3@demo.in` · `rider@demo.in` · `admin@demo.in`
+`customer@demo.in` (Priya) · `customer2@demo.in` (Rahul, Gold) · `customer3@demo.in` · `owner@demo.in` (Saffron Courtyard + Napoli Fire Oven) · `owner2@demo.in` · `owner3@demo.in` · `rider@demo.in` · `admin@demo.in` · `newpartner@demo.in` (restaurant awaiting approval)
 
 With `NEXT_PUBLIC_DEMO_MODE=true`, the **Demo** button (bottom-left) switches between them.
 
@@ -55,7 +84,7 @@ src/
   components/       shared, layout and demo components
   config/           brand, navigation, demo personas
   lib/supabase/     server, browser and middleware clients
-supabase/migrations SQL migrations (Phase 1)
+supabase/          migrations, demo seed, local Supabase config
 e2e/                Playwright tests
 ```
 

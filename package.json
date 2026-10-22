@@ -15,7 +15,10 @@
     "dev:stack": "scripts/dev-stack/start.sh",
     "test:rls": "tsx --env-file=.env.local scripts/rls-test.ts",
     "db:types": "tsx --env-file=.env.local scripts/gen-db-types.ts",
-    "dev:migrate": "scripts/dev-stack/migrate.sh"
+    "dev:migrate": "scripts/dev-stack/migrate.sh",
+    "local:setup": "node scripts/local-setup.mjs",
+    "local:reset": "node scripts/local-setup.mjs --reset",
+    "local:stop": "npx -y supabase@2.53.6 stop"
   },
   "dependencies": {
     "@hookform/resolvers": "^6.0.0",
