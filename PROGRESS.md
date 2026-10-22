@@ -106,19 +106,19 @@ Ticked only when verified working (tests or manual check).
 - [ ] Event cards → ticket booking → QR ticket
 
 ## 4. Restaurant partner
-- [ ] Onboarding (pending → approved)
+- [x] Onboarding (pending → approved; approval UI is in the admin console)
 - [x] Live orders with sound + notification, accept/reject/ready/handover, KOT
-- [ ] Online/offline, busy, holidays
-- [ ] Menu management (categories, items, variants, add-ons, stock, timings)
-- [ ] Inventory with low-stock + auto out-of-stock
-- [ ] Offers
-- [ ] Ads campaigns
-- [ ] Reviews + replies + AI summary
-- [ ] Table bookings + tables with QR
-- [ ] Business reports + CSV
-- [ ] Payouts
+- [x] Online/offline, busy, holidays
+- [x] Menu management (categories, items, variants, add-ons, stock, timings)
+- [x] Inventory with low-stock + auto out-of-stock
+- [x] Offers
+- [x] Ads campaigns
+- [x] Reviews + replies + AI summary
+- [x] Table bookings + tables with QR
+- [x] Business reports + CSV
+- [x] Payouts
 - [x] Multi-outlet switcher
-- [ ] Staff management
+- [x] Staff management
 - [x] Auto-accept toggle
 
 ## 5. Rider
