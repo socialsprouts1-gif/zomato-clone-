@@ -86,7 +86,7 @@ SUPABASE_DB_URL=$DB_URL
 NEXT_PUBLIC_DEMO_MODE=true
 ENV
 
-if [ "${RESET:-0}" = "1" ] && [ -f "$ROOT/scripts/seed.ts" ]; then
+if [ "${RESET:-0}" = "1" ] && [ -f "$ROOT/supabase/seed.sql" ]; then
   echo "• seeding"
   (cd "$ROOT" && pnpm -s seed)
 fi

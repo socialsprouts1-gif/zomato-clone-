@@ -748,10 +748,10 @@ out.push("-- BEGIN partner-history");
   };
   const hint = (a: number, b: number) => Math.floor(a + hrand() * (b - a + 1));
   const hpick = <T,>(arr: readonly T[]): T => arr[Math.floor(hrand() * arr.length)]!;
-  // Restaurant-local IST clock time, `days` ago, `minute` minutes after midnight.
-  out.push(`create or replace function pg_temp.ist(d int, m int) returns timestamptz language sql stable as
-  $$ select (date_trunc('day', now() at time zone 'Asia/Kolkata') - make_interval(days => d) + make_interval(mins => m)) at time zone 'Asia/Kolkata' $$;`);
-  const istAt = (days: number, minute: number) => raw(`pg_temp.ist(${days},${Math.round(minute)})`);
+  // Restaurant-local IST clock time, `days` ago, `minute` minutes after midnight. Inlined (no helper function):
+  // the Supabase CLI sends the seed as one batch, where temporary helper functions aren't available.
+  const istAt = (days: number, minute: number) =>
+    raw(`((date_trunc('day', now() at time zone 'Asia/Kolkata') - interval '${days} days' + interval '${Math.round(minute)} minutes') at time zone 'Asia/Kolkata')`);
   // Lunch and dinner peaks, a little breakfast/evening trade.
   const hourWeights: [number, number][] = [[8, 1], [9, 1], [10, 1], [11, 2], [12, 6], [13, 8], [14, 5], [15, 2], [16, 1], [17, 2], [18, 3], [19, 6], [20, 9], [21, 9], [22, 6], [23, 2]];
   const totalW = hourWeights.reduce((s, [, w]) => s + w, 0);
