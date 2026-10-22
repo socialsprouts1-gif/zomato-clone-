@@ -7,18 +7,35 @@
  * Re-running is safe. Use `pnpm local:reset` to wipe and re-seed the database.
  */
 import { execSync } from "node:child_process";
-import { existsSync, readFileSync, writeFileSync } from "node:fs";
+import { chmodSync, existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import path from "node:path";
 
-// npm 11+ blocks package install scripts by default, and the Supabase CLI package needs its install script
-// to download the binary, so allow it explicitly. A globally installed `supabase` (e.g. Homebrew) wins.
-const ENV = { ...process.env, npm_config_allow_scripts: "supabase", npm_config_yes: "true" };
-let CLI = "npx -y supabase@2.53.6";
-try {
-  execSync("supabase --version", { stdio: "ignore" });
-  CLI = "supabase";
-} catch {
-  // not installed globally; use npx
+// Supabase CLI: use a globally installed `supabase` (e.g. Homebrew) if there is one; otherwise download the
+// official release binary once into node_modules/.cache (npm-based installs break when npm blocks install scripts).
+const VERSION = "2.53.6";
+const ENV = process.env;
+function resolveCli() {
+  try {
+    execSync("supabase --version", { stdio: "ignore" });
+    return "supabase";
+  } catch {
+    // not installed globally
+  }
+  const dir = path.resolve("node_modules/.cache/supabase-cli");
+  const bin = path.join(dir, process.platform === "win32" ? "supabase.exe" : "supabase");
+  if (!existsSync(bin)) {
+    const os = { darwin: "darwin", linux: "linux", win32: "windows" }[process.platform];
+    const arch = { arm64: "arm64", x64: "amd64" }[process.arch];
+    if (!os || !arch) throw new Error(`No Supabase CLI build for ${process.platform}/${process.arch}. Install it yourself: https://supabase.com/docs/guides/local-development/cli/getting-started`);
+    console.log(`• downloading Supabase CLI ${VERSION} (${os}/${arch})…`);
+    mkdirSync(dir, { recursive: true });
+    const url = `https://github.com/supabase/cli/releases/download/v${VERSION}/supabase_${os}_${arch}.tar.gz`;
+    execSync(`curl -fsSL "${url}" | tar -xz -C "${dir}"`, { stdio: "inherit" });
+    if (process.platform !== "win32") chmodSync(bin, 0o755);
+  }
+  return `"${bin}"`;
 }
+const CLI = resolveCli();
 const run = (cmd) => execSync(cmd, { stdio: "inherit", env: ENV });
 const read = (cmd) => execSync(cmd, { encoding: "utf8", stdio: ["ignore", "pipe", "inherit"], env: ENV });
 
