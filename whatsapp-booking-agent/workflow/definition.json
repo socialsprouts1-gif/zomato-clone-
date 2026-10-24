@@ -1,0 +1,123 @@
+{
+  "name": "WhatsApp Appointment Booking Agent",
+  "slug": "appointment-booking-agent",
+  "inbound_message_read_mode": "read_with_typing",
+  "message_debounce_seconds": 3,
+  "definition": {
+    "nodes": [
+      {
+        "id": "start",
+        "position": { "x": 100, "y": 100 },
+        "data": { "node_type": "start", "display_name": "Start", "config": {} }
+      },
+      {
+        "id": "booking_agent",
+        "position": { "x": 100, "y": 260 },
+        "data": {
+          "node_type": "agent",
+          "display_name": "Booking agent",
+          "config": {
+            "provider_model_id": "1caa3ea4-b319-462b-abae-025bcfdd8cf1",
+            "temperature": 0.2,
+            "max_iterations": 60,
+            "message_delivery_mode": "auto_send_assistant_text",
+            "system_prompt": "You are the friendly WhatsApp booking assistant for the business. You help customers book, view and cancel appointments.\n\nStyle\n- Reply in the customer's language (English, Hindi or Hinglish are common). Keep messages short and WhatsApp-friendly. Use at most one emoji per message.\n- Ask one question at a time.\n\nBooking steps\n1. At the start, call check_availability with no date to learn today's date, the timezone and the list of services.\n2. Find out which service they want. If they are unsure, use send_ui_choose_service to show the services.\n3. Find out the date they want. Turn words like 'tomorrow' or 'next Monday' into YYYY-MM-DD using today's date from check_availability.\n4. Call check_availability with the date and service_id. Offer the free times with send_ui_choose_time (up to 10, spread across the day). If nothing is free, say so and suggest the next day.\n5. Ask for their name if you don't have it.\n6. Confirm the summary (service, date, time, name) and ask them to confirm with send_ui_confirm_booking.\n7. Only after they confirm, call book_appointment. Then send the confirmation with the booking ID, and tell them they can message any time to view or cancel.\n\nOther requests\n- 'My bookings' / 'what's booked': call my_appointments and list them with IDs.\n- Cancel: call my_appointments, confirm which one, then call cancel_appointment with its ID.\n- Reschedule: book the new slot first, then cancel the old one.\n- Questions you can't answer, complaints, or a request to talk to a person: use handoff_to_human.\n\nRules\n- Never invent free times, prices or booking IDs. Only use what the tools return.\n- If a tool says a slot is taken, apologise and offer the times it returned.\n- Times are in the business timezone. Show them in 12-hour format (e.g. 3:30 PM).\n- When the customer is done (booking confirmed and no more questions, or they say bye), send a short goodbye and call complete_task.",
+            "enabled_default_tools": [
+              "send_notification_to_user",
+              "get_current_datetime",
+              "get_whatsapp_context",
+              "save_variable",
+              "get_variable",
+              "handoff_to_human",
+              "enter_waiting",
+              "complete_task"
+            ],
+            "flow_agent_function_tools": [
+              {
+                "name": "check_availability",
+                "description": "Get today's date, timezone and services. With a date (and service_id), returns the free start times (HH:MM, 24h) for that day.",
+                "function_id": "9895819b-c5dc-4f5e-98fa-c3cfe5204697",
+                "input_schema": {
+                  "type": "object",
+                  "properties": {
+                    "action": { "type": "string", "enum": ["check_availability"] },
+                    "date": { "type": "string", "description": "Day to check, YYYY-MM-DD. Omit to just get services and today's date." },
+                    "service_id": { "type": "string", "description": "Service id from the services list." }
+                  },
+                  "required": ["action"]
+                }
+              },
+              {
+                "name": "book_appointment",
+                "description": "Book a confirmed slot for the current WhatsApp customer. Call only after the customer confirms.",
+                "function_id": "9895819b-c5dc-4f5e-98fa-c3cfe5204697",
+                "input_schema": {
+                  "type": "object",
+                  "properties": {
+                    "action": { "type": "string", "enum": ["book_appointment"] },
+                    "service_id": { "type": "string" },
+                    "date": { "type": "string", "description": "YYYY-MM-DD" },
+                    "time": { "type": "string", "description": "HH:MM 24-hour, must be one of the free times" },
+                    "customer_name": { "type": "string" },
+                    "notes": { "type": "string", "description": "Optional notes from the customer" }
+                  },
+                  "required": ["action", "service_id", "date", "time", "customer_name"]
+                }
+              },
+              {
+                "name": "my_appointments",
+                "description": "List the current customer's upcoming booked appointments with their IDs.",
+                "function_id": "9895819b-c5dc-4f5e-98fa-c3cfe5204697",
+                "input_schema": {
+                  "type": "object",
+                  "properties": { "action": { "type": "string", "enum": ["my_appointments"] } },
+                  "required": ["action"]
+                }
+              },
+              {
+                "name": "cancel_appointment",
+                "description": "Cancel one of the current customer's appointments by its booking ID.",
+                "function_id": "9895819b-c5dc-4f5e-98fa-c3cfe5204697",
+                "input_schema": {
+                  "type": "object",
+                  "properties": {
+                    "action": { "type": "string", "enum": ["cancel_appointment"] },
+                    "appointment_id": { "type": "string" }
+                  },
+                  "required": ["action", "appointment_id"]
+                }
+              }
+            ],
+            "ui_skills": [
+              {
+                "key": "choose_service",
+                "title": "Choose a service",
+                "component_type": "interactive_list",
+                "instruction": "When the customer hasn't picked a service, show the services from check_availability. Use each service id as the row ID, its name as the title and its length (e.g. '30 min') as the description.",
+                "enabled": true,
+                "wait_for_reply": true
+              },
+              {
+                "key": "choose_time",
+                "title": "Choose a time",
+                "component_type": "interactive_list",
+                "instruction": "After check_availability returns free times for a date, offer up to 10 of them. Row ID is the HH:MM 24h time; title is the 12-hour time (e.g. '3:30 PM'). Body names the service and date.",
+                "enabled": true,
+                "wait_for_reply": true
+              },
+              {
+                "key": "confirm_booking",
+                "title": "Confirm booking",
+                "component_type": "interactive_reply_buttons",
+                "instruction": "Before calling book_appointment, show the summary (service, date, time, name) and two buttons: 'Confirm' (id confirm) and 'Change' (id change).",
+                "enabled": true,
+                "wait_for_reply": true
+              }
+            ]
+          }
+        }
+      }
+    ],
+    "edges": [{ "id": "e1", "source": "start", "target": "booking_agent", "label": "next" }]
+  }
+}
